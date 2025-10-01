@@ -3,337 +3,652 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VIP రెడ్డి మ్యాట్రిమోనీ</title>
+    <title>VIP రెడ్డి మ్యాట్రిమోనీ - Complete System</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 <body>
     <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState } = React;
-
-        const App = () => {
-            const [isLoggedIn, setIsLoggedIn] = useState(false);
-            const [password, setPassword] = useState('');
-            const [view, setView] = useState('uncle');
-            const [selectedProfile, setSelectedProfile] = useState(null);
-            const [searchTerm, setSearchTerm] = useState('');
-            const [selectedForMatch, setSelectedForMatch] = useState(null);
-
-            const correctPassword = 'reddy2025';
-
-            const profiles = [
-                {
-                    id: 1,
-                    name: 'విజయ్ రెడ్డి',
-                    year: '1992',
-                    gender: 'boy',
-                    profession: 'MLA',
-                    property: '200 ఎకరాల భూములు',
-                    netWorth: '50+ కోట్లు',
-                    dowryExpectation: '10 కోట్లు',
-                    subCaste: 'వెలమ',
-                    location: 'హైదరాబాద్',
-                    photo: '👑'
-                },
-                {
-                    id: 2,
-                    name: 'లక్ష్మి రెడ్డి',
-                    year: '1997',
-                    gender: 'girl',
-                    profession: 'IAS',
-                    property: '100 ఎకరాల భూములు',
-                    netWorth: '30+ కోట్లు',
-                    dowryCapacity: '12 కోట్లు',
-                    subCaste: 'కప్పు',
-                    location: 'విజయవాడ',
-                    photo: '👸'
-                }
-            ];
-
-            const filteredProfiles = profiles.filter(p => 
-                p.name.includes(searchTerm) || 
-                p.profession.includes(searchTerm) ||
-                p.year.includes(searchTerm)
-            );
-
-            const findMatches = (profile) => {
-                if (!profile) return [];
-                const oppositeGender = profile.gender === 'boy' ? 'girl' : 'boy';
-                const candidates = profiles.filter(p => p.gender === oppositeGender);
-                
-                return candidates.map(candidate => {
-                    let score = 0;
-                    let reasons = [];
-                    
-                    if (profile.netWorth === candidate.netWorth) {
-                        score += 40;
-                        reasons.push('సమాన ఆస్తి');
-                    }
-                    
-                    if (profile.gender === 'boy') {
-                        const boyExpects = parseInt(profile.dowryExpectation);
-                        const girlHas = parseInt(candidate.dowryCapacity);
-                        if (girlHas >= boyExpects) {
-                            score += 30;
-                            reasons.push('వరకట్నం సరిపోతుంది');
-                        }
-                    }
-                    
-                    const ageDiff = parseInt(profile.year) - parseInt(candidate.year);
-                    if (profile.gender === 'boy' && ageDiff >= -5 && ageDiff <= -2) {
-                        score += 20;
-                        reasons.push('సరైన వయస్సు');
-                    }
-                    
-                    if (profile.subCaste === candidate.subCaste) {
-                        score += 10;
-                        reasons.push('ఒకే సబ్‌కులం');
-                    }
-                    
-                    return { profile: candidate, score, percentage: Math.min(100, score), reasons };
-                }).sort((a, b) => b.score - a.score);
-            };
-
-            if (!isLoggedIn) {
-                return (
-                    <div className="min-h-screen bg-gradient-to-br from-red-600 via-orange-600 to-yellow-600 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
-                            <div className="text-center mb-8">
-                                <div className="text-6xl mb-4">👑</div>
-                                <h1 className="text-3xl font-bold text-gray-800 mb-2">VIP రెడ్డి మ్యాట్రిమోనీ</h1>
-                                <p className="text-gray-600">గోప్య ప్రవేశం</p>
-                                <div className="mt-4 text-sm text-gray-500">🔒 పాస్‌వర్డ్ రక్షిత సేవ</div>
-                            </div>
-
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                        పాస్‌వర్డ్ నమోదు చేయండి
-                                    </label>
-                                    <input
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        onKeyPress={(e) => {
-                                            if (e.key === 'Enter' && password === correctPassword) {
-                                                setIsLoggedIn(true);
-                                            }
-                                        }}
-                                        placeholder="పాస్‌వర్డ్..."
-                                        className="w-full p-4 border-2 border-gray-300 rounded-lg text-lg focus:border-red-500 focus:outline-none"
-                                    />
-                                </div>
-
-                                <button
-                                    onClick={() => {
-                                        if (password === correctPassword) {
-                                            setIsLoggedIn(true);
-                                        } else {
-                                            alert('తప్పు పాస్‌వర్డ్!');
-                                            setPassword('');
-                                        }
-                                    }}
-                                    className="w-full bg-gradient-to-r from-red-600 to-orange-600 text-white py-4 rounded-lg font-bold text-lg shadow-lg"
-                                >
-                                    లాగిన్ చేయండి
-                                </button>
-
-                                <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
-                                    <p className="text-sm text-yellow-800 text-center">
-                                        <strong>గమనిక:</strong> ఈ సేవ పూర్తిగా గోప్యమైనది
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="mt-8 text-center text-xs text-gray-500">
-                                <p>VIP కుటుంబాల కోసం ప్రత్యేక సేవ</p>
-                                <p className="mt-1">MLA | మంత్రి | IAS | IPS</p>
-                            </div>
-                        </div>
-                    </div>
-                );
-            }
-
-            return (
-                <div className="max-w-2xl mx-auto p-4 bg-gray-50 min-h-screen">
-                    <div className="bg-white rounded-lg shadow p-4 mb-4 flex items-center justify-between">
-                        <span className="text-sm text-green-600 font-semibold">🔒 సురక్షిత సెషన్</span>
-                        <button
-                            onClick={() => { setIsLoggedIn(false); setPassword(''); }}
-                            className="text-sm text-red-600 font-semibold hover:underline"
-                        >
-                            లాగ్అవుట్
-                        </button>
-                    </div>
-
-                    <div className="flex gap-2 mb-4">
-                        <button
-                            onClick={() => setView('uncle')}
-                            className={`flex-1 py-3 rounded-lg font-bold ${view === 'uncle' ? 'bg-red-600 text-white' : 'bg-white'}`}
-                        >
-                            👤 అంకుల్ వ్యూ
-                        </button>
-                        <button
-                            onClick={() => setView('agent')}
-                            className={`flex-1 py-3 rounded-lg font-bold ${view === 'agent' ? 'bg-purple-600 text-white' : 'bg-white'}`}
-                        >
-                            ➕ ఏజెంట్ వ్యూ
-                        </button>
-                    </div>
-
-                    {view === 'uncle' && (
-                        <div className="space-y-4">
-                            <div className="bg-gradient-to-r from-yellow-600 to-red-600 text-white p-6 rounded-lg">
-                                <h1 className="text-2xl font-bold">👑 VIP రెడ్డి మ్యాట్రిమోనీ</h1>
-                                <p className="text-sm">మొత్తం: {profiles.length} ప్రొఫైల్స్</p>
-                            </div>
-
-                            <input
-                                type="text"
-                                placeholder="🔍 వెతకండి..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full p-3 border-2 rounded-lg"
-                            />
-
-                            <div className="space-y-3">
-                                {filteredProfiles.map(profile => (
-                                    <div key={profile.id} className="bg-white border-2 border-yellow-300 rounded-lg p-4">
-                                        <div className="flex gap-4">
-                                            <div className="text-5xl">{profile.photo}</div>
-                                            <div className="flex-1">
-                                                <h3 className="text-xl font-bold">{profile.name}</h3>
-                                                <div className="text-sm text-gray-600 space-y-1 mt-2">
-                                                    <div>జననం: {profile.year} | {profile.subCaste} రెడ్డి</div>
-                                                    <div>వృత్తి: {profile.profession}</div>
-                                                    <div className="font-bold text-green-700">ఆస్తి: {profile.netWorth}</div>
-                                                    <div>{profile.property}</div>
-                                                    {profile.gender === 'boy' && <div className="text-orange-600">వరకట్నం: {profile.dowryExpectation}</div>}
-                                                    {profile.gender === 'girl' && <div className="text-orange-600">వరకట్నం: {profile.dowryCapacity}</div>}
-                                                </div>
-                                                <div className="flex gap-2 mt-3">
-                                                    <button 
-                                                        onClick={() => {setSelectedProfile(profile); setView('profile');}}
-                                                        className="flex-1 bg-red-600 text-white py-2 rounded-lg font-bold"
-                                                    >
-                                                        👁️ వివరాలు
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => {setSelectedForMatch(profile); setView('matches');}}
-                                                        className="flex-1 bg-purple-600 text-white py-2 rounded-lg font-bold"
-                                                    >
-                                                        📊 మ్యాచ్‌లు
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {view === 'agent' && (
-                        <div className="space-y-4">
-                            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-lg">
-                                <h1 className="text-2xl font-bold">ఏజెంట్ - కొత్త ప్రొఫైల్</h1>
-                            </div>
-                            <div className="bg-white border-2 rounded-lg p-6 space-y-4">
-                                <div className="border-4 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                                    <div className="text-5xl mb-4">📄</div>
-                                    <p className="text-gray-600">బయోడేటా అప్‌లోడ్ చేయండి</p>
-                                    <button className="bg-blue-500 text-white py-2 px-6 rounded-lg mt-2">ఫైల్ ఎంచుకోండి</button>
-                                </div>
-                                <div className="bg-red-50 border-2 rounded-lg p-4 space-y-3">
-                                    <h3 className="font-bold">VIP వివరాలు తెలుగులో</h3>
-                                    <input type="text" placeholder="పేరు" className="w-full p-3 border rounded-lg" />
-                                    <select className="w-full p-3 border rounded-lg">
-                                        <option>వృత్తి (MLA, IAS, IPS...)</option>
-                                        <option>MLA</option>
-                                        <option>IAS</option>
-                                        <option>IPS</option>
-                                    </select>
-                                    <input type="text" placeholder="నికర విలువ (కోట్లు)" className="w-full p-3 border rounded-lg" />
-                                    <textarea placeholder="ఆస్తి వివరాలు" className="w-full p-3 border rounded-lg" rows="2"></textarea>
-                                    <button className="w-full bg-red-600 text-white py-3 rounded-lg font-bold">సేవ్ చేయండి</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {view === 'profile' && selectedProfile && (
-                        <div className="space-y-4">
-                            <button onClick={() => setView('uncle')} className="text-red-600 font-semibold">← వెనక్కి</button>
-                            <div className="bg-white border-2 rounded-lg p-6">
-                                <div className="text-center mb-4">
-                                    <div className="text-7xl">{selectedProfile.photo}</div>
-                                    <h2 className="text-2xl font-bold mt-2">{selectedProfile.name}</h2>
-                                </div>
-                                <div className="space-y-3 text-sm">
-                                    <div className="p-3 bg-gray-50 rounded"><strong>జననం:</strong> {selectedProfile.year}</div>
-                                    <div className="p-3 bg-gray-50 rounded"><strong>వృత్తి:</strong> {selectedProfile.profession}</div>
-                                    <div className="p-3 bg-green-50 rounded"><strong>ఆస్తి:</strong> {selectedProfile.netWorth}</div>
-                                </div>
-                                <button 
-                                    onClick={() => {setSelectedForMatch(selectedProfile); setView('matches');}}
-                                    className="w-full bg-purple-600 text-white py-3 rounded-lg font-bold mt-4"
-                                >
-                                    మ్యాచ్‌లు చూడు
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {view === 'matches' && selectedForMatch && (
-                        <div className="space-y-4">
-                            <button onClick={() => setView('uncle')} className="text-red-600 font-semibold">← వెనక్కి</button>
-                            <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6 rounded-lg">
-                                <h1 className="text-xl font-bold">{selectedForMatch.name} కి మ్యాచ్‌లు</h1>
-                                <p className="text-sm">ఆస్తి, వరకట్నం, వయస్సు ఆధారంగా</p>
-                            </div>
-                            <div className="bg-white border-2 rounded-lg p-4">
-                                {findMatches(selectedForMatch).map((match) => (
-                                    <div key={match.profile.id} className="border-2 rounded-lg p-4 mb-3">
-                                        <div className="flex gap-4">
-                                            <div className="text-4xl">{match.profile.photo}</div>
-                                            <div className="flex-1">
-                                                <div className="flex justify-between">
-                                                    <h4 className="font-bold">{match.profile.name}</h4>
-                                                    <div className="text-2xl font-bold text-purple-600">{match.percentage}%</div>
-                                                </div>
-                                                <div className="text-sm text-gray-600 mt-2">
-                                                    <div>{match.profile.profession}</div>
-                                                    <div className="font-bold text-green-700">{match.profile.netWorth}</div>
-                                                </div>
-                                                <div className="flex flex-wrap gap-2 mt-2">
-                                                    {match.reasons.map((reason, i) => (
-                                                        <span key={i} className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">
-                                                            ✓ {reason}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                                <button 
-                                                    onClick={() => {setSelectedProfile(match.profile); setView('profile');}}
-                                                    className="w-full bg-blue-500 text-white py-2 rounded mt-3 font-semibold"
-                                                >
-                                                    వివరాలు చూడు
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_ccsSTtyB5l8teo2KT0u-DdGx7ZLmP9Q",
+            authDomain: "reddy-matrimony.firebaseapp.com",
+            projectId: "reddy-matrimony",
+            storageBucket: "reddy-matrimony.firebasestorage.app",
+            messagingSenderId: "746200669417",
+            appId: "1:746200669417-web:fd195cdf70194f8c6de478"
         };
 
-        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+        // AI API Configuration
+        const AI_CONFIG = {
+            apiUrl: "https://api.euron.one/api/v1/euri/chat/completions",
+            apiKey: "euri-806e518a3ad06e4491c2b099282bf8de3fef780b9ed1abde986b954a3c95dad6",
+            model: "gemini-2.5-pro"
+        };
+
+        const MATCH_THRESHOLD = 75;
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Utility Functions
+        async function callAI(messages, maxTokens = 1000) {
+            try {
+                const response = await fetch(AI_CONFIG.apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${AI_CONFIG.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        messages: messages,
+                        model: AI_CONFIG.model,
+                        max_tokens: maxTokens,
+                        temperature: 0.7
+                    })
+                });
+
+                const data = await response.json();
+                if (data.choices && data.choices[0]) {
+                    return data.choices[0].message.content;
+                }
+                return null;
+            } catch (error) {
+                console.error('AI API Error:', error);
+                return null;
+            }
+        }
+
+        async function extractBiodataFromText(text) {
+            const prompt = `Extract matrimony profile data from this biodata and return ONLY valid JSON with Telugu values:
+
+${text}
+
+Return this exact JSON structure (fill all fields in Telugu):
+{
+  "name": "తెలుగు పేరు",
+  "nameEng": "English name",
+  "year": "1990",
+  "gender": "boy or girl",
+  "height": "5'10\\"",
+  "education": "qualification",
+  "profession": "job title",
+  "netWorth": "50+ కోట్లు",
+  "property": "property details in Telugu",
+  "dowryExpectation": "10 కోట్లు (if boy, else null)",
+  "dowryCapacity": "12 కోట్లు (if girl, else null)",
+  "subCaste": "మోటాటి/కప్పు/వెలమ/పెద్ద కాపు",
+  "location": "city in Telugu",
+  "phone": "+91XXXXXXXXXX"
+}
+
+Return ONLY the JSON, no other text.`;
+
+            const messages = [{
+                role: "user",
+                content: prompt
+            }];
+
+            const response = await callAI(messages, 2000);
+            if (!response) return null;
+
+            try {
+                const jsonMatch = response.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    return JSON.parse(jsonMatch[0]);
+                }
+            } catch (e) {
+                console.error('JSON parse error:', e);
+            }
+            return null;
+        }
+
+        function calculateMatch(boy, girl) {
+            let score = 0;
+            let reasons = [];
+
+            const boyWorth = parseInt(boy.netWorth) || 0;
+            const girlWorth = parseInt(girl.netWorth) || 0;
+            const worthDiff = Math.abs(boyWorth - girlWorth);
+            
+            if (worthDiff <= 10) {
+                score += 40;
+                reasons.push('సమాన ఆస్తి స్థాయి');
+            } else if (worthDiff <= 20) {
+                score += 30;
+                reasons.push('దగ్గరి ఆస్తి స్థాయి');
+            } else if (worthDiff <= 30) {
+                score += 20;
+            }
+
+            const boyExpects = parseInt(boy.dowryExpectation) || 0;
+            const girlHas = parseInt(girl.dowryCapacity) || 0;
+            
+            if (girlHas >= boyExpects) {
+                const diff = girlHas - boyExpects;
+                if (diff <= 5) {
+                    score += 30;
+                    reasons.push('వరకట్నం సరిపోతుంది');
+                } else {
+                    score += 25;
+                    reasons.push('వరకట్నం బాగా సరిపోతుంది');
+                }
+            } else if (girlHas >= boyExpects * 0.8) {
+                score += 15;
+            }
+
+            const boyYear = parseInt(boy.year);
+            const girlYear = parseInt(girl.year);
+            const ageDiff = boyYear - girlYear;
+            
+            if (ageDiff >= -7 && ageDiff <= -2) {
+                score += 15;
+                reasons.push('సరైన వయస్సు తేడా');
+            } else if (ageDiff >= -10 && ageDiff <= -1) {
+                score += 10;
+            }
+
+            if (boy.subCaste === girl.subCaste) {
+                score += 10;
+                reasons.push('ఒకే సబ్‌కులం');
+            }
+
+            if (boy.location === girl.location) {
+                score += 5;
+                reasons.push('ఒకే ప్రాంతం');
+            }
+
+            return {
+                score: Math.min(100, score),
+                reasons: reasons
+            };
+        }
+
+        // Main App Component
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = {
+                    user: null,
+                    userRole: null,
+                    loading: true,
+                    profiles: [],
+                    matches: [],
+                    loginEmail: '',
+                    loginPassword: '',
+                    error: null,
+                    processing: false
+                };
+            }
+
+            componentDidMount() {
+                auth.onAuthStateChanged(async (user) => {
+                    if (user) {
+                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        const userData = userDoc.data();
+                        
+                        this.setState({
+                            user: user,
+                            userRole: userData?.role || 'agent',
+                            loading: false
+                        }, () => {
+                            this.loadData();
+                        });
+                    } else {
+                        this.setState({ loading: false });
+                    }
+                });
+            }
+
+            async loadData() {
+                const { user, userRole } = this.state;
+                
+                try {
+                    if (userRole === 'uncle') {
+                        const profilesSnapshot = await db.collection('profiles')
+                            .where('status', '==', 'active')
+                            .get();
+                        
+                        const profiles = profilesSnapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+
+                        const boys = profiles.filter(p => p.gender === 'boy');
+                        const girls = profiles.filter(p => p.gender === 'girl');
+                        
+                        const matches = [];
+                        boys.forEach(boy => {
+                            girls.forEach(girl => {
+                                const match = calculateMatch(boy, girl);
+                                if (match.score >= MATCH_THRESHOLD) {
+                                    matches.push({
+                                        boy: boy,
+                                        girl: girl,
+                                        score: match.score,
+                                        reasons: match.reasons,
+                                        id: `${boy.id}-${girl.id}`
+                                    });
+                                }
+                            });
+                        });
+
+                        matches.sort((a, b) => b.score - a.score);
+
+                        this.setState({ profiles, matches });
+                    } else {
+                        const profilesSnapshot = await db.collection('profiles')
+                            .where('agentId', '==', user.uid)
+                            .get();
+                        
+                        const profiles = profilesSnapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+
+                        this.setState({ profiles });
+                    }
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    this.setState({ error: 'Error loading data: ' + error.message });
+                }
+            }
+
+            async handleLogin(e) {
+                e.preventDefault();
+                const { loginEmail, loginPassword } = this.state;
+                
+                this.setState({ error: null, processing: true });
+                
+                try {
+                    await auth.signInWithEmailAndPassword(loginEmail, loginPassword);
+                } catch (error) {
+                    this.setState({ 
+                        error: 'Login failed: ' + error.message,
+                        processing: false 
+                    });
+                }
+            }
+
+            async handleLogout() {
+                await auth.signOut();
+                this.setState({
+                    user: null,
+                    userRole: null,
+                    profiles: [],
+                    matches: []
+                });
+            }
+
+            async handleFileUpload(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                this.setState({ error: 'Processing biodata...', processing: true });
+
+                try {
+                    const reader = new FileReader();
+                    reader.onload = async (event) => {
+                        const text = event.target.result;
+                        
+                        const extractedData = await extractBiodataFromText(text);
+                        
+                        if (extractedData) {
+                            const profileData = {
+                                ...extractedData,
+                                agentId: this.state.user.uid,
+                                agentEmail: this.state.user.email,
+                                status: 'active',
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            };
+
+                            await db.collection('profiles').add(profileData);
+                            
+                            this.setState({ 
+                                error: 'Profile added successfully!',
+                                processing: false 
+                            });
+                            this.loadData();
+                        } else {
+                            this.setState({ 
+                                error: 'Could not extract data from biodata. Please try again or add manually.',
+                                processing: false 
+                            });
+                        }
+                    };
+                    
+                    reader.readAsText(file);
+                } catch (error) {
+                    this.setState({ 
+                        error: 'Error: ' + error.message,
+                        processing: false 
+                    });
+                }
+            }
+
+            async approveMatch(match) {
+                if (!window.confirm(`Approve this match?\n\n${match.boy.name} (${match.boy.profession})\n+\n${match.girl.name} (${match.girl.profession})\n\nMatch Score: ${match.score}%`)) {
+                    return;
+                }
+
+                try {
+                    await db.collection('matches').add({
+                        boyId: match.boy.id,
+                        girlId: match.girl.id,
+                        boyName: match.boy.name,
+                        girlName: match.girl.name,
+                        score: match.score,
+                        reasons: match.reasons,
+                        approvedBy: this.state.user.uid,
+                        approvedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        status: 'approved'
+                    });
+
+                    alert('Match approved successfully!\n\n(SMS/WhatsApp feature will be added when you enable it)');
+                    this.loadData();
+                } catch (error) {
+                    alert('Error approving match: ' + error.message);
+                }
+            }
+
+            render() {
+                const { loading, user, userRole, profiles, matches, error, processing } = this.state;
+
+                if (loading) {
+                    return React.createElement('div', { 
+                        className: 'min-h-screen flex items-center justify-center bg-gray-100' 
+                    },
+                        React.createElement('div', { className: 'text-2xl font-bold text-gray-600' }, 
+                            'Loading...'
+                        )
+                    );
+                }
+
+                if (!user) {
+                    return React.createElement('div', { 
+                        className: 'min-h-screen bg-gradient-to-br from-red-600 via-orange-600 to-yellow-600 flex items-center justify-center p-4' 
+                    },
+                        React.createElement('div', { 
+                            className: 'bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full' 
+                        },
+                            React.createElement('div', { className: 'text-center mb-8' },
+                                React.createElement('div', { className: 'text-6xl mb-4' }, '👑'),
+                                React.createElement('h1', { className: 'text-3xl font-bold text-gray-800 mb-2' }, 
+                                    'VIP రెడ్డి మ్యాట్రిమోనీ'
+                                ),
+                                React.createElement('p', { className: 'text-gray-600' }, 
+                                    'Professional Matchmaking System'
+                                ),
+                                React.createElement('div', { className: 'mt-2 text-sm text-gray-500' },
+                                    'Uncle & Agent Login'
+                                )
+                            ),
+                            React.createElement('form', { 
+                                onSubmit: (e) => this.handleLogin(e), 
+                                className: 'space-y-4' 
+                            },
+                                React.createElement('input', {
+                                    type: 'email',
+                                    placeholder: 'Email',
+                                    className: 'w-full p-4 border-2 border-gray-300 rounded-lg text-lg focus:border-red-500 focus:outline-none',
+                                    value: this.state.loginEmail,
+                                    onChange: (e) => this.setState({ loginEmail: e.target.value }),
+                                    required: true
+                                }),
+                                React.createElement('input', {
+                                    type: 'password',
+                                    placeholder: 'Password',
+                                    className: 'w-full p-4 border-2 border-gray-300 rounded-lg text-lg focus:border-red-500 focus:outline-none',
+                                    value: this.state.loginPassword,
+                                    onChange: (e) => this.setState({ loginPassword: e.target.value }),
+                                    required: true
+                                }),
+                                React.createElement('button', {
+                                    type: 'submit',
+                                    className: 'w-full bg-gradient-to-r from-red-600 to-orange-600 text-white py-4 rounded-lg font-bold text-lg shadow-lg hover:shadow-xl transition',
+                                    disabled: processing
+                                }, processing ? 'Logging in...' : 'Login'),
+                                error && React.createElement('div', { 
+                                    className: `text-sm text-center p-3 rounded ${error.includes('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}` 
+                                }, error)
+                            ),
+                            React.createElement('div', { className: 'mt-6 p-4 bg-gray-50 rounded-lg text-xs text-gray-600' },
+                                React.createElement('div', { className: 'font-bold mb-2' }, 'Test Credentials:'),
+                                React.createElement('div', null, 'Uncle: uncle@reddy.com / reddy2025'),
+                                React.createElement('div', null, 'Agent: agent@reddy.com / agent123')
+                            )
+                        )
+                    );
+                }
+
+                if (userRole === 'uncle') {
+                    return React.createElement('div', { className: 'min-h-screen bg-gray-50 p-4' },
+                        React.createElement('div', { className: 'max-w-6xl mx-auto' },
+                            React.createElement('div', { className: 'bg-white rounded-lg shadow p-4 mb-4 flex justify-between items-center' },
+                                React.createElement('div', null,
+                                    React.createElement('h1', { className: 'text-2xl font-bold flex items-center gap-2' }, 
+                                        '👑 Uncle Dashboard'
+                                    ),
+                                    React.createElement('p', { className: 'text-sm text-gray-600' }, 
+                                        `Logged in as: ${user.email}`
+                                    )
+                                ),
+                                React.createElement('button', {
+                                    onClick: () => this.handleLogout(),
+                                    className: 'bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700'
+                                }, 'Logout')
+                            ),
+                            React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4 mb-6' },
+                                React.createElement('div', { className: 'bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg' },
+                                    React.createElement('div', { className: 'text-4xl font-bold mb-2' }, profiles.length),
+                                    React.createElement('div', { className: 'text-sm opacity-90' }, 'Total Active Profiles'),
+                                    React.createElement('div', { className: 'text-xs mt-2 opacity-75' }, 
+                                        `Boys: ${profiles.filter(p => p.gender === 'boy').length} | Girls: ${profiles.filter(p => p.gender === 'girl').length}`
+                                    )
+                                ),
+                                React.createElement('div', { className: 'bg-gradient-to-br from-green-500 to-green-600 text-white p-6 rounded-lg shadow-lg' },
+                                    React.createElement('div', { className: 'text-4xl font-bold mb-2' }, matches.length),
+                                    React.createElement('div', { className: 'text-sm opacity-90' }, `AI Matches (${MATCH_THRESHOLD}%+)`),
+                                    React.createElement('div', { className: 'text-xs mt-2 opacity-75' }, 
+                                        'Smart algorithm-based suggestions'
+                                    )
+                                ),
+                                React.createElement('div', { className: 'bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-lg shadow-lg' },
+                                    React.createElement('div', { className: 'text-4xl font-bold mb-2' }, 
+                                        matches.length > 0 ? matches[0].score + '%' : '--'
+                                    ),
+                                    React.createElement('div', { className: 'text-sm opacity-90' }, 'Top Match Score'),
+                                    React.createElement('div', { className: 'text-xs mt-2 opacity-75' }, 
+                                        'Highest compatibility'
+                                    )
+                                )
+                            ),
+                            React.createElement('div', { className: 'bg-white rounded-lg shadow-lg p-6' },
+                                React.createElement('h2', { className: 'text-2xl font-bold mb-6 flex items-center gap-2' }, 
+                                    '🎯 Top Matches for Approval'
+                                ),
+                                matches.length === 0 ? 
+                                    React.createElement('div', { className: 'text-center py-12' },
+                                        React.createElement('div', { className: 'text-6xl mb-4' }, '📊'),
+                                        React.createElement('p', { className: 'text-xl text-gray-500 mb-2' }, 
+                                            'No matches found above threshold'
+                                        ),
+                                        React.createElement('p', { className: 'text-sm text-gray-400' }, 
+                                            `Need at least ${MATCH_THRESHOLD}% compatibility score`
+                                        ),
+                                        profiles.length < 2 && React.createElement('p', { className: 'text-sm text-gray-400 mt-2' }, 
+                                            'Add more profiles to see matches'
+                                        )
+                                    ) :
+                                    React.createElement('div', { className: 'space-y-6' },
+                                        matches.slice(0, 20).map(match =>
+                                            React.createElement('div', { 
+                                                key: match.id, 
+                                                className: 'border-2 border-purple-200 rounded-xl p-6 hover:shadow-xl transition bg-gradient-to-br from-white to-purple-50' 
+                                            },
+                                                React.createElement('div', { className: 'flex items-start justify-between mb-4' },
+                                                    React.createElement('div', { className: 'flex-1' },
+                                                        React.createElement('div', { className: 'grid grid-cols-2 gap-6 mb-4' },
+                                                            React.createElement('div', { className: 'flex items-center gap-3' },
+                                                                React.createElement('span', { className: 'text-5xl' }, '👨'),
+                                                                React.createElement('div', null,
+                                                                    React.createElement('div', { className: 'font-bold text-xl text-blue-900' }, match.boy.name),
+                                                                    React.createElement('div', { className: 'text-sm text-gray-600' }, 
+                                                                        `${match.boy.year} | ${match.boy.profession}`
+                                                                    ),
+                                                                    React.createElement('div', { className: 'text-sm font-semibold text-green-700' }, 
+                                                                        match.boy.netWorth
+                                                                    ),
+                                                                    React.createElement('div', { className: 'text-xs text-orange-600 mt-1' }, 
+                                                                        `Dowry: ${match.boy.dowryExpectation}`
+                                                                    )
+                                                                )
+                                                            ),
+                                                            React.createElement('div', { className: 'flex items-center gap-3' },
+                                                                React.createElement('span', { className: 'text-5xl' }, '👩'),
+                                                                React.createElement('div', null,
+                                                                    React.createElement('div', { className: 'font-bold text-xl text-pink-900' }, match.girl.name),
+                                                                    React.createElement('div', { className: 'text-sm text-gray-600' }, 
+                                                                        `${match.girl.year} | ${match.girl.profession}`
+                                                                    ),
+                                                                    React.createElement('div', { className: 'text-sm font-semibold text-green-700' }, 
+                                                                        match.girl.netWorth
+                                                                    ),
+                                                                    React.createElement('div', { className: 'text-xs text-green-600 mt-1' }, 
+                                                                        `Dowry: ${match.girl.dowryCapacity}`
+                                                                    )
+                                                                )
+                                                            )
+                                                        )
+                                                    ),
+                                                    React.createElement('div', { className: 'text-center' },
+                                                        React.createElement('div', { className: 'text-5xl font-bold text-purple-600 mb-1' }, 
+                                                            match.score + '%'
+                                                        ),
+                                                        React.createElement('div', { className: 'text-xs text-gray-500' }, 
+                                                            'Match Score'
+                                                        )
+                                                    )
+                                                ),
+                                                React.createElement('div', { className: 'flex flex-wrap gap-2 mb-4' },
+                                                    match.reasons.map((reason, i) =>
+                                                        React.createElement('span', { 
+                                                            key: i, 
+                                                            className: 'bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold' 
+                                                        }, '✓ ' + reason)
+                                                    )
+                                                ),
+                                                React.createElement('button', {
+                                                    onClick: () => this.approveMatch(match),
+                                                    className: 'w-full bg-gradient-to-r from-green-600 to-emerald-600 text-white py-4 rounded-lg font-bold text-lg shadow-lg hover:shadow-xl transition'
+                                                }, '✅ Approve This Match')
+                                            )
+                                        )
+                                    )
+                            )
+                        )
+                    );
+                }
+
+                return React.createElement('div', { className: 'min-h-screen bg-gray-50 p-4' },
+                    React.createElement('div', { className: 'max-w-4xl mx-auto' },
+                        React.createElement('div', { className: 'bg-white rounded-lg shadow p-4 mb-4 flex justify-between items-center' },
+                            React.createElement('div', null,
+                                React.createElement('h1', { className: 'text-2xl font-bold' }, '🤝 Agent Portal'),
+                                React.createElement('p', { className: 'text-sm text-gray-600' }, 
+                                    `Logged in as: ${user.email}`
+                                )
+                            ),
+                            React.createElement('button', {
+                                onClick: () => this.handleLogout(),
+                                className: 'bg-red-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-red-700'
+                            }, 'Logout')
+                        ),
+                        React.createElement('div', { className: 'bg-white rounded-lg shadow-lg p-6 mb-6' },
+                            React.createElement('h2', { className: 'text-xl font-bold mb-4' }, 
+                                '📄 Upload Biodata (AI Auto-Extract)'
+                            ),
+                            React.createElement('div', { className: 'border-4 border-dashed border-blue-300 rounded-lg p-8 text-center bg-blue-50' },
+                                React.createElement('div', { className: 'text-5xl mb-4' }, '📎'),
+                                React.createElement('p', { className: 'text-gray-700 mb-4' }, 
+                                    'Upload a text file or PDF with biodata information'
+                                ),
+                                React.createElement('input', {
+                                    type: 'file',
+                                    accept: '.txt,.pdf',
+                                    onChange: (e) => this.handleFileUpload(e),
+                                    className: 'w-full p-3 border-2 rounded-lg cursor-pointer',
+                                    disabled: processing
+                                }),
+                                React.createElement('p', { className: 'text-xs text-gray-500 mt-3' }, 
+                                    'AI will automatically extract data in Telugu'
+                                )
+                            ),
+                            error && React.createElement('div', { 
+                                className: `mt-4 p-4 rounded-lg text-center font-semibold ${error.includes('success') ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}` 
+                            }, error)
+                        ),
+                        React.createElement('div', { className: 'bg-white rounded-lg shadow-lg p-6' },
+                            React.createElement('h2', { className: 'text-xl font-bold mb-4' }, 
+                                `Your Profiles (${profiles.length})`
+                            ),
+                            profiles.length === 0 ?
+                                React.createElement('div', { className: 'text-center py-12' },
+                                    React.createElement('div', { className: 'text-6xl mb-4' }, '📋'),
+                                    React.createElement('p', { className: 'text-gray-500 text-lg' }, 
+                                        'No profiles yet'
+                                    ),
+                                    React.createElement('p', { className: 'text-sm text-gray-400 mt-2' }, 
+                                        'Upload a biodata to get started!'
+                                    )
+                                ) :
+                                React.createElement('div', { className: 'space-y-4' },
+                                    profiles.map(profile =>
+                                        React.createElement('div', { 
+                                            key: profile.id, 
+                                            className: 'border-2 border-gray-200 rounded-lg p-4 hover:shadow-lg transition' 
+                                        },
+                                            React.createElement('div', { className: 'flex items-start gap-4' },
+                                                React.createElement('div', { className: 'text-5xl' }, 
+                                                    profile.gender === 'boy' ? '👨' : '👩'
+                                                ),
+                                                React.createElement('div', { className: 'flex-1' },
+                                                    React.createElement('h3', { className: 'text-lg font-bold' }, 
+                                                        profile.name
+                                                    ),
+                                                    React.createElement('div', { className: 'text-sm text-gray-600 mt-1' },
+                                                        `${profile.year} | ${profile.profession} | ${profile.location}`
+                                                    ),
+                                                    React.createElement('div', { className: 'text-sm font-semibold text-green-700 mt-1' },
+                                                        `Net Worth: ${profile.netWorth}`
+                                                    ),
+                                                    React.createElement('div', { className: 'text-sm text-gray-700 mt-1' },
+                                                        `${profile.subCaste} Reddy`
+                                                    ),
+                                                    React.createElement('div', { className: 'mt-2 text-xs text-gray-500' },
+                                                        `Status: ${profile.status} | Added: ${profile.createdAt ? new Date(profile.createdAt.seconds * 1000).toLocaleDateString() : 'Recent'}`
+                                                    )
+                                                )
+                                            )
+                                        )
+                                    )
+                                )
+                        )
+                    )
+                );
+            }
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(App));
     </script>
 </body>
 </html>
