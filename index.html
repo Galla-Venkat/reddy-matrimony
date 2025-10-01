@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP రెడ్డి మ్యాట్రిమోనీ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const App = () => {
+            const [isLoggedIn, setIsLoggedIn] = useState(false);
+            const [password, setPassword] = useState('');
+            const [view, setView] = useState('uncle');
+            const [selectedProfile, setSelectedProfile] = useState(null);
+            const [searchTerm, setSearchTerm] = useState('');
+            const [selectedForMatch, setSelectedForMatch] = useState(null);
+
+            const correctPassword = 'reddy2025';
+
+            const profiles = [
+                {
+                    id: 1,
+                    name: 'విజయ్ రెడ్డి',
+                    year: '1992',
+                    gender: 'boy',
+                    profession: 'MLA',
+                    property: '200 ఎకరాల భూములు',
+                    netWorth: '50+ కోట్లు',
+                    dowryExpectation: '10 కోట్లు',
+                    subCaste: 'వెలమ',
+                    location: 'హైదరాబాద్',
+                    photo: '👑'
+                },
+                {
+                    id: 2,
+                    name: 'లక్ష్మి రెడ్డి',
+                    year: '1997',
+                    gender: 'girl',
+                    profession: 'IAS',
+                    property: '100 ఎకరాల భూములు',
+                    netWorth: '30+ కోట్లు',
+                    dowryCapacity: '12 కోట్లు',
+                    subCaste: 'కప్పు',
+                    location: 'విజయవాడ',
+                    photo: '👸'
+                }
+            ];
+
+            const filteredProfiles = profiles.filter(p => 
+                p.name.includes(searchTerm) || 
+                p.profession.includes(searchTerm) ||
+                p.year.includes(searchTerm)
+            );
+
+            const findMatches = (profile) => {
+                if (!profile) return [];
+                const oppositeGender = profile.gender === 'boy' ? 'girl' : 'boy';
+                const candidates = profiles.filter(p => p.gender === oppositeGender);
+                
+                return candidates.map(candidate => {
+                    let score = 0;
+                    let reasons = [];
+                    
+                    if (profile.netWorth === candidate.netWorth) {
+                        score += 40;
+                        reasons.push('సమాన ఆస్తి');
+                    }
+                    
+                    if (profile.gender === 'boy') {
+                        const boyExpects = parseInt(profile.dowryExpectation);
+                        const girlHas = parseInt(candidate.dowryCapacity);
+                        if (girlHas >= boyExpects) {
+                            score += 30;
+                            reasons.push('వరకట్నం సరిపోతుంది');
+                        }
+                    }
+                    
+                    const ageDiff = parseInt(profile.year) - parseInt(candidate.year);
+                    if (profile.gender === 'boy' && ageDiff >= -5 && ageDiff <= -2) {
+                        score += 20;
+                        reasons.push('సరైన వయస్సు');
+                    }
+                    
+                    if (profile.subCaste === candidate.subCaste) {
+                        score += 10;
+                        reasons.push('ఒకే సబ్‌కులం');
+                    }
+                    
+                    return { profile: candidate, score, percentage: Math.min(100, score), reasons };
+                }).sort((a, b) => b.score - a.score);
+            };
+
+            if (!isLoggedIn) {
+                return (
+                    <div className="min-h-screen bg-gradient-to-br from-red-600 via-orange-600 to-yellow-600 flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full">
+                            <div className="text-center mb-8">
+                                <div className="text-6xl mb-4">👑</div>
+                                <h1 className="text-3xl font-bold text-gray-800 mb-2">VIP రెడ్డి మ్యాట్రిమోనీ</h1>
+                                <p className="text-gray-600">గోప్య ప్రవేశం</p>
+                                <div className="mt-4 text-sm text-gray-500">🔒 పాస్‌వర్డ్ రక్షిత సేవ</div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                        పాస్‌వర్డ్ నమోదు చేయండి
+                                    </label>
+                                    <input
+                                        type="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        onKeyPress={(e) => {
+                                            if (e.key === 'Enter' && password === correctPassword) {
+                                                setIsLoggedIn(true);
+                                            }
+                                        }}
+                                        placeholder="పాస్‌వర్డ్..."
+                                        className="w-full p-4 border-2 border-gray-300 rounded-lg text-lg focus:border-red-500 focus:outline-none"
+                                    />
+                                </div>
+
+                                <button
+                                    onClick={() => {
+                                        if (password === correctPassword) {
+                                            setIsLoggedIn(true);
+                                        } else {
+                                            alert('తప్పు పాస్‌వర్డ్!');
+                                            setPassword('');
+                                        }
+                                    }}
+                                    className="w-full bg-gradient-to-r from-red-600 to-orange-600 text-white py-4 rounded-lg font-bold text-lg shadow-lg"
+                                >
+                                    లాగిన్ చేయండి
+                                </button>
+
+                                <div className="bg-yellow-50 border-2 border-yellow-300 rounded-lg p-4">
+                                    <p className="text-sm text-yellow-800 text-center">
+                                        <strong>గమనిక:</strong> ఈ సేవ పూర్తిగా గోప్యమైనది
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="mt-8 text-center text-xs text-gray-500">
+                                <p>VIP కుటుంబాల కోసం ప్రత్యేక సేవ</p>
+                                <p className="mt-1">MLA | మంత్రి | IAS | IPS</p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="max-w-2xl mx-auto p-4 bg-gray-50 min-h-screen">
+                    <div className="bg-white rounded-lg shadow p-4 mb-4 flex items-center justify-between">
+                        <span className="text-sm text-green-600 font-semibold">🔒 సురక్షిత సెషన్</span>
+                        <button
+                            onClick={() => { setIsLoggedIn(false); setPassword(''); }}
+                            className="text-sm text-red-600 font-semibold hover:underline"
+                        >
+                            లాగ్అవుట్
+                        </button>
+                    </div>
+
+                    <div className="flex gap-2 mb-4">
+                        <button
+                            onClick={() => setView('uncle')}
+                            className={`flex-1 py-3 rounded-lg font-bold ${view === 'uncle' ? 'bg-red-600 text-white' : 'bg-white'}`}
+                        >
+                            👤 అంకుల్ వ్యూ
+                        </button>
+                        <button
+                            onClick={() => setView('agent')}
+                            className={`flex-1 py-3 rounded-lg font-bold ${view === 'agent' ? 'bg-purple-600 text-white' : 'bg-white'}`}
+                        >
+                            ➕ ఏజెంట్ వ్యూ
+                        </button>
+                    </div>
+
+                    {view === 'uncle' && (
+                        <div className="space-y-4">
+                            <div className="bg-gradient-to-r from-yellow-600 to-red-600 text-white p-6 rounded-lg">
+                                <h1 className="text-2xl font-bold">👑 VIP రెడ్డి మ్యాట్రిమోనీ</h1>
+                                <p className="text-sm">మొత్తం: {profiles.length} ప్రొఫైల్స్</p>
+                            </div>
+
+                            <input
+                                type="text"
+                                placeholder="🔍 వెతకండి..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full p-3 border-2 rounded-lg"
+                            />
+
+                            <div className="space-y-3">
+                                {filteredProfiles.map(profile => (
+                                    <div key={profile.id} className="bg-white border-2 border-yellow-300 rounded-lg p-4">
+                                        <div className="flex gap-4">
+                                            <div className="text-5xl">{profile.photo}</div>
+                                            <div className="flex-1">
+                                                <h3 className="text-xl font-bold">{profile.name}</h3>
+                                                <div className="text-sm text-gray-600 space-y-1 mt-2">
+                                                    <div>జననం: {profile.year} | {profile.subCaste} రెడ్డి</div>
+                                                    <div>వృత్తి: {profile.profession}</div>
+                                                    <div className="font-bold text-green-700">ఆస్తి: {profile.netWorth}</div>
+                                                    <div>{profile.property}</div>
+                                                    {profile.gender === 'boy' && <div className="text-orange-600">వరకట్నం: {profile.dowryExpectation}</div>}
+                                                    {profile.gender === 'girl' && <div className="text-orange-600">వరకట్నం: {profile.dowryCapacity}</div>}
+                                                </div>
+                                                <div className="flex gap-2 mt-3">
+                                                    <button 
+                                                        onClick={() => {setSelectedProfile(profile); setView('profile');}}
+                                                        className="flex-1 bg-red-600 text-white py-2 rounded-lg font-bold"
+                                                    >
+                                                        👁️ వివరాలు
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => {setSelectedForMatch(profile); setView('matches');}}
+                                                        className="flex-1 bg-purple-600 text-white py-2 rounded-lg font-bold"
+                                                    >
+                                                        📊 మ్యాచ్‌లు
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {view === 'agent' && (
+                        <div className="space-y-4">
+                            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-lg">
+                                <h1 className="text-2xl font-bold">ఏజెంట్ - కొత్త ప్రొఫైల్</h1>
+                            </div>
+                            <div className="bg-white border-2 rounded-lg p-6 space-y-4">
+                                <div className="border-4 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                    <div className="text-5xl mb-4">📄</div>
+                                    <p className="text-gray-600">బయోడేటా అప్‌లోడ్ చేయండి</p>
+                                    <button className="bg-blue-500 text-white py-2 px-6 rounded-lg mt-2">ఫైల్ ఎంచుకోండి</button>
+                                </div>
+                                <div className="bg-red-50 border-2 rounded-lg p-4 space-y-3">
+                                    <h3 className="font-bold">VIP వివరాలు తెలుగులో</h3>
+                                    <input type="text" placeholder="పేరు" className="w-full p-3 border rounded-lg" />
+                                    <select className="w-full p-3 border rounded-lg">
+                                        <option>వృత్తి (MLA, IAS, IPS...)</option>
+                                        <option>MLA</option>
+                                        <option>IAS</option>
+                                        <option>IPS</option>
+                                    </select>
+                                    <input type="text" placeholder="నికర విలువ (కోట్లు)" className="w-full p-3 border rounded-lg" />
+                                    <textarea placeholder="ఆస్తి వివరాలు" className="w-full p-3 border rounded-lg" rows="2"></textarea>
+                                    <button className="w-full bg-red-600 text-white py-3 rounded-lg font-bold">సేవ్ చేయండి</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {view === 'profile' && selectedProfile && (
+                        <div className="space-y-4">
+                            <button onClick={() => setView('uncle')} className="text-red-600 font-semibold">← వెనక్కి</button>
+                            <div className="bg-white border-2 rounded-lg p-6">
+                                <div className="text-center mb-4">
+                                    <div className="text-7xl">{selectedProfile.photo}</div>
+                                    <h2 className="text-2xl font-bold mt-2">{selectedProfile.name}</h2>
+                                </div>
+                                <div className="space-y-3 text-sm">
+                                    <div className="p-3 bg-gray-50 rounded"><strong>జననం:</strong> {selectedProfile.year}</div>
+                                    <div className="p-3 bg-gray-50 rounded"><strong>వృత్తి:</strong> {selectedProfile.profession}</div>
+                                    <div className="p-3 bg-green-50 rounded"><strong>ఆస్తి:</strong> {selectedProfile.netWorth}</div>
+                                </div>
+                                <button 
+                                    onClick={() => {setSelectedForMatch(selectedProfile); setView('matches');}}
+                                    className="w-full bg-purple-600 text-white py-3 rounded-lg font-bold mt-4"
+                                >
+                                    మ్యాచ్‌లు చూడు
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {view === 'matches' && selectedForMatch && (
+                        <div className="space-y-4">
+                            <button onClick={() => setView('uncle')} className="text-red-600 font-semibold">← వెనక్కి</button>
+                            <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6 rounded-lg">
+                                <h1 className="text-xl font-bold">{selectedForMatch.name} కి మ్యాచ్‌లు</h1>
+                                <p className="text-sm">ఆస్తి, వరకట్నం, వయస్సు ఆధారంగా</p>
+                            </div>
+                            <div className="bg-white border-2 rounded-lg p-4">
+                                {findMatches(selectedForMatch).map((match) => (
+                                    <div key={match.profile.id} className="border-2 rounded-lg p-4 mb-3">
+                                        <div className="flex gap-4">
+                                            <div className="text-4xl">{match.profile.photo}</div>
+                                            <div className="flex-1">
+                                                <div className="flex justify-between">
+                                                    <h4 className="font-bold">{match.profile.name}</h4>
+                                                    <div className="text-2xl font-bold text-purple-600">{match.percentage}%</div>
+                                                </div>
+                                                <div className="text-sm text-gray-600 mt-2">
+                                                    <div>{match.profile.profession}</div>
+                                                    <div className="font-bold text-green-700">{match.profile.netWorth}</div>
+                                                </div>
+                                                <div className="flex flex-wrap gap-2 mt-2">
+                                                    {match.reasons.map((reason, i) => (
+                                                        <span key={i} className="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-semibold">
+                                                            ✓ {reason}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                                <button 
+                                                    onClick={() => {setSelectedProfile(match.profile); setView('profile');}}
+                                                    className="w-full bg-blue-500 text-white py-2 rounded mt-3 font-semibold"
+                                                >
+                                                    వివరాలు చూడు
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
