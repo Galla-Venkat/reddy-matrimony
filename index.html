@@ -475,62 +475,84 @@
                             </div>
 
                             <div class="bg-white rounded-2xl shadow-xl p-6 mb-6">
-                                <h2 class="text-2xl font-bold mb-4">కొత్త ప్రొఫైల్ జోడించండి</h2>
-                                <form id="profileForm" class="grid grid-cols-2 gap-4">
-                                    <div class="col-span-2"><h3 class="font-bold text-lg border-b pb-2">వ్యక్తిగత సమాచారం</h3></div>
-                                    <input type="text" id="name" placeholder="పేరు (తెలుగులో)" required class="px-4 py-2 border rounded-lg" />
-                                    <input type="text" id="nameEng" placeholder="Name (English)" required class="px-4 py-2 border rounded-lg" />
-                                    <select id="gender" required class="px-4 py-2 border rounded-lg">
-                                        <option value="">లింగం ఎంచుకోండి</option>
-                                        <option value="boy">అబ్బాయి</option>
-                                        <option value="girl">అమ్మాయి</option>
-                                    </select>
-                                    <input type="number" id="year" placeholder="జననం సంవత్సరం" required class="px-4 py-2 border rounded-lg" />
-                                    <input type="text" id="height" placeholder="ఎత్తు" class="px-4 py-2 border rounded-lg" />
-                                    <input type="text" id="education" placeholder="విద్య" class="px-4 py-2 border rounded-lg" />
-                                    
-                                    <div class="col-span-2"><h3 class="font-bold text-lg border-b pb-2 mt-4">VIP సమాచారం</h3></div>
-                                    <input type="text" id="profession" placeholder="ఉద్యోగం" class="px-4 py-2 border rounded-lg" />
-                                    <select id="vipLevel" class="px-4 py-2 border rounded-lg">
-                                        <option value="">VIP స్థాయి</option>
-                                        <option value="1">1 - సాధారణం</option>
-                                        <option value="2">2 - మంచిది</option>
-                                        <option value="3">3 - అత్యుత్తమం</option>
-                                        <option value="4">4 - VIP</option>
-                                        <option value="5">5 - సూపర్ VIP</option>
-                                    </select>
-                                    <input type="text" id="politicalConnections" placeholder="రాజకీయ సంబంధాలు" class="px-4 py-2 border rounded-lg col-span-2" />
-                                    
-                                    <div class="col-span-2"><h3 class="font-bold text-lg border-b pb-2 mt-4">ఆర్థిక సమాచారం</h3></div>
-                                    <input type="text" id="netWorth" placeholder="నికర విలువ (కోట్లలో)" class="px-4 py-2 border rounded-lg" />
-                                    <input type="text" id="dowryExpectation" placeholder="వరకట్నం (కోట్లలో)" class="px-4 py-2 border rounded-lg" />
-                                    <textarea id="propertyDetails" placeholder="ఆస్తి వివరాలు" class="px-4 py-2 border rounded-lg col-span-2" rows="2"></textarea>
-                                    
-                                    <div class="col-span-2"><h3 class="font-bold text-lg border-b pb-2 mt-4">కుటుంబ సమాచారం</h3></div>
-                                    <input type="text" id="subCaste" placeholder="ఉప-కులం" class="px-4 py-2 border rounded-lg" />
-                                    <input type="text" id="fatherName" placeholder="తండ్రి పేరు" class="px-4 py-2 border rounded-lg" />
-                                    <input type="text" id="motherName" placeholder="తల్లి పేరు" class="px-4 py-2 border rounded-lg" />
-                                    <input type="number" id="siblingsCount" placeholder="తోబుట్టువుల సంఖ్య" class="px-4 py-2 border rounded-lg" />
-                                    
-                                    <div class="col-span-2"><h3 class="font-bold text-lg border-b pb-2 mt-4">స్థాన సమాచారం</h3></div>
-                                    <input type="text" id="location" placeholder="ప్రస్తుత నగరం" class="px-4 py-2 border rounded-lg" />
-                                    <input type="text" id="nativePlace" placeholder="స్వస్థలం" class="px-4 py-2 border rounded-lg" />
-                                    
-                                    <div class="col-span-2"><h3 class="font-bold text-lg border-b pb-2 mt-4">సంప్రదింపు సమాచారం</h3></div>
-                                    <input type="tel" id="phone" placeholder="ఫోన్ నంబర్" required class="px-4 py-2 border rounded-lg" />
-                                    <input type="tel" id="whatsapp" placeholder="వాట్సప్ నంబర్" class="px-4 py-2 border rounded-lg" />
-                                    
-                                    <div class="col-span-2"><h3 class="font-bold text-lg border-b pb-2 mt-4">ఫోటో</h3></div>
-                                    <input type="file" id="photoFile" accept="image/*" class="col-span-2" />
-                                    <div id="photoPreview" class="col-span-2 hidden mt-2">
-                                        <img id="previewImg" class="max-h-40 rounded-lg" />
-                                    </div>
-                                    
-                                    <button type="submit" class="col-span-2 mt-4 bg-orange-500 text-white py-3 rounded-lg font-semibold hover:bg-orange-600">
-                                        ప్రొఫైల్ సేవ్ చేయండి
+                                <h2 class="text-2xl font-bold mb-4">బయోడేటా అప్లోడ్ చేయండి</h2>
+                                
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-4">
+                                    <div class="text-5xl mb-4">📄</div>
+                                    <input type="file" id="biodataFile" accept=".txt,.pdf" class="hidden" />
+                                    <button onclick="document.getElementById('biodataFile').click()" 
+                                        class="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-semibold">
+                                        బయోడేటా ఫైల్ ఎంచుకోండి
                                     </button>
-                                </form>
-                                <div id="saveStatus" class="mt-4 hidden"></div>
+                                    <p class="text-sm text-gray-500 mt-2">TXT లేదా PDF ఫైల్</p>
+                                </div>
+
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                                    <div class="text-5xl mb-4">📷</div>
+                                    <input type="file" id="photoFile" accept="image/*" class="hidden" />
+                                    <button onclick="document.getElementById('photoFile').click()" 
+                                        class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-semibold">
+                                        ఫోటో ఎంచుకోండి
+                                    </button>
+                                    <p class="text-sm text-gray-500 mt-2">ఫోటో జోడించండి (ఐచ్ఛికం)</p>
+                                    <div id="photoPreview" class="mt-4 hidden">
+                                        <img id="previewImg" class="mx-auto rounded-lg max-h-40" />
+                                    </div>
+                                </div>
+
+                                <div id="uploadStatus" class="mt-4 hidden"></div>
+
+                                <div id="extractedDataForm" class="mt-6 hidden">
+                                    <h3 class="text-xl font-bold mb-4 text-green-600">✓ AI డేటా సంగ్రహించింది - దయచేసి సరిచూడండి</h3>
+                                    <form id="profileForm" class="grid grid-cols-2 gap-4">
+                                        <div class="col-span-2"><h3 class="font-bold text-lg border-b pb-2">వ్యక్తిగత సమాచారం</h3></div>
+                                        <input type="text" id="name" placeholder="పేరు (తెలుగులో)" required class="px-4 py-2 border rounded-lg bg-yellow-50" />
+                                        <input type="text" id="nameEng" placeholder="Name (English)" required class="px-4 py-2 border rounded-lg bg-yellow-50" />
+                                        <select id="gender" required class="px-4 py-2 border rounded-lg bg-yellow-50">
+                                            <option value="">లింగం ఎంచుకోండి</option>
+                                            <option value="boy">అబ్బాయి</option>
+                                            <option value="girl">అమ్మాయి</option>
+                                        </select>
+                                        <input type="number" id="year" placeholder="జననం సంవత్సరం" required class="px-4 py-2 border rounded-lg bg-yellow-50" />
+                                        <input type="text" id="height" placeholder="ఎత్తు" class="px-4 py-2 border rounded-lg" />
+                                        <input type="text" id="education" placeholder="విద్య" class="px-4 py-2 border rounded-lg" />
+                                        
+                                        <div class="col-span-2"><h3 class="font-bold text-lg border-b pb-2 mt-4">VIP సమాచారం</h3></div>
+                                        <input type="text" id="profession" placeholder="ఉద్యోగం" class="px-4 py-2 border rounded-lg" />
+                                        <select id="vipLevel" class="px-4 py-2 border rounded-lg">
+                                            <option value="">VIP స్థాయి</option>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select>
+                                        <input type="text" id="politicalConnections" placeholder="రాజకీయ సంబంధాలు" class="px-4 py-2 border rounded-lg col-span-2" />
+                                        
+                                        <div class="col-span-2"><h3 class="font-bold text-lg border-b pb-2 mt-4">ఆర్థిక సమాచారం</h3></div>
+                                        <input type="text" id="netWorth" placeholder="నికర విలువ (కోట్లలో)" class="px-4 py-2 border rounded-lg bg-yellow-50" />
+                                        <input type="text" id="dowryExpectation" placeholder="వరకట్నం (కోట్లలో)" class="px-4 py-2 border rounded-lg bg-yellow-50" />
+                                        <textarea id="propertyDetails" placeholder="ఆస్తి వివరాలు" class="px-4 py-2 border rounded-lg col-span-2" rows="2"></textarea>
+                                        
+                                        <div class="col-span-2"><h3 class="font-bold text-lg border-b pb-2 mt-4">కుటుంబ సమాచారం</h3></div>
+                                        <input type="text" id="subCaste" placeholder="ఉప-కులం" class="px-4 py-2 border rounded-lg bg-yellow-50" />
+                                        <input type="text" id="fatherName" placeholder="తండ్రి పేరు" class="px-4 py-2 border rounded-lg" />
+                                        <input type="text" id="motherName" placeholder="తల్లి పేరు" class="px-4 py-2 border rounded-lg" />
+                                        <input type="number" id="siblingsCount" placeholder="తోబుట్టువుల సంఖ్య" class="px-4 py-2 border rounded-lg" />
+                                        
+                                        <div class="col-span-2"><h3 class="font-bold text-lg border-b pb-2 mt-4">స్థాన సమాచారం</h3></div>
+                                        <input type="text" id="location" placeholder="ప్రస్తుత నగరం" class="px-4 py-2 border rounded-lg bg-yellow-50" />
+                                        <input type="text" id="nativePlace" placeholder="స్వస్థలం" class="px-4 py-2 border rounded-lg" />
+                                        
+                                        <div class="col-span-2"><h3 class="font-bold text-lg border-b pb-2 mt-4">సంప్రదింపు సమాచారం</h3></div>
+                                        <input type="tel" id="phone" placeholder="ఫోన్ నంబర్" required class="px-4 py-2 border rounded-lg bg-yellow-50" />
+                                        <input type="tel" id="whatsapp" placeholder="వాట్సప్ నంబర్" class="px-4 py-2 border rounded-lg" />
+                                        
+                                        <button type="submit" class="col-span-2 mt-4 bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600">
+                                            ✓ సరిచూసి సేవ్ చేయండి
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
 
                             <div class="bg-white rounded-2xl shadow-xl p-6">
@@ -557,67 +579,191 @@
                     }
                 });
 
-                document.getElementById('profileForm').addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const statusDiv = document.getElementById('saveStatus');
-                    statusDiv.classList.remove('hidden');
-                    statusDiv.innerHTML = '<div class="bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded">సేవ్ చేస్తోంది...</div>';
-
-                    try {
-                        let photoUrl = null;
-                        const photoFile = document.getElementById('photoFile').files[0];
-                        if (photoFile) {
-                            photoUrl = await new Promise((resolve) => {
-                                const reader = new FileReader();
-                                reader.onload = () => resolve(reader.result);
-                                reader.readAsDataURL(photoFile);
-                            });
-                        }
-
-                        const profileData = {
-                            name: document.getElementById('name').value,
-                            name_eng: document.getElementById('nameEng').value,
-                            gender: document.getElementById('gender').value,
-                            year: document.getElementById('year').value,
-                            height: document.getElementById('height').value,
-                            education: document.getElementById('education').value,
-                            profession: document.getElementById('profession').value,
-                            vip_level: document.getElementById('vipLevel').value,
-                            political_connections: document.getElementById('politicalConnections').value,
-                            net_worth: document.getElementById('netWorth').value,
-                            dowry_expectation: document.getElementById('dowryExpectation').value,
-                            property_details: document.getElementById('propertyDetails').value,
-                            sub_caste: document.getElementById('subCaste').value,
-                            father_name: document.getElementById('fatherName').value,
-                            mother_name: document.getElementById('motherName').value,
-                            siblings_count: document.getElementById('siblingsCount').value,
-                            location: document.getElementById('location').value,
-                            native_place: document.getElementById('nativePlace').value,
-                            phone: document.getElementById('phone').value,
-                            whatsapp: document.getElementById('whatsapp').value,
-                            photo_url: photoUrl,
-                            agent_id: currentUser.id,
-                            agent_name: currentUserData.name,
-                            status: 'active'
-                        };
-
-                        const { error } = await supabase.from('profiles').insert(profileData);
-                        if (error) throw error;
-
-                        statusDiv.innerHTML = '<div class="bg-green-50 border border-green-200 text-green-700 p-3 rounded">విజయవంతంగా సేవ్ చేయబడింది!</div>';
-                        document.getElementById('profileForm').reset();
-                        document.getElementById('photoPreview').classList.add('hidden');
-                        
-                        setTimeout(() => {
-                            statusDiv.classList.add('hidden');
-                            loadAgentProfiles();
-                        }, 2000);
-                    } catch (error) {
-                        statusDiv.innerHTML = `<div class="bg-red-50 border border-red-200 text-red-700 p-3 rounded">లోపం: ${error.message}</div>`;
-                    }
-                });
+                document.getElementById('biodataFile').addEventListener('change', handleBiodataUpload);
 
                 loadAgentProfiles();
+            }
+
+            async function handleBiodataUpload(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const statusDiv = document.getElementById('uploadStatus');
+                statusDiv.classList.remove('hidden');
+                statusDiv.innerHTML = '<div class="bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded">AI ప్రాసెస్ చేస్తోంది... దయచేసి వేచి ఉండండి</div>';
+
+                try {
+                    const text = await file.text();
+                    const extractedData = await extractBiodataWithAI(text);
+                    
+                    statusDiv.innerHTML = '<div class="bg-green-50 border border-green-200 text-green-700 p-3 rounded">✓ డేటా సంగ్రహించబడింది! దయచేసి దిగువ ఫారమ్‌ను సరిచూడండి</div>';
+                    
+                    // Fill form with extracted data
+                    document.getElementById('extractedDataForm').classList.remove('hidden');
+                    document.getElementById('name').value = extractedData.name || '';
+                    document.getElementById('nameEng').value = extractedData.nameEng || '';
+                    document.getElementById('gender').value = extractedData.gender || '';
+                    document.getElementById('year').value = extractedData.year || '';
+                    document.getElementById('height').value = extractedData.height || '';
+                    document.getElementById('education').value = extractedData.education || '';
+                    document.getElementById('profession').value = extractedData.profession || '';
+                    document.getElementById('vipLevel').value = extractedData.vipLevel || '';
+                    document.getElementById('politicalConnections').value = extractedData.politicalConnections || '';
+                    document.getElementById('netWorth').value = extractedData.netWorth || '';
+                    document.getElementById('dowryExpectation').value = extractedData.dowryExpectation || '';
+                    document.getElementById('propertyDetails').value = extractedData.propertyDetails || '';
+                    document.getElementById('subCaste').value = extractedData.subCaste || '';
+                    document.getElementById('fatherName').value = extractedData.fatherName || '';
+                    document.getElementById('motherName').value = extractedData.motherName || '';
+                    document.getElementById('siblingsCount').value = extractedData.siblingsCount || '';
+                    document.getElementById('location').value = extractedData.location || '';
+                    document.getElementById('nativePlace').value = extractedData.nativePlace || '';
+                    document.getElementById('phone').value = extractedData.phone || '';
+                    document.getElementById('whatsapp').value = extractedData.whatsapp || '';
+
+                    document.getElementById('profileForm').addEventListener('submit', handleProfileSubmit);
+                    
+                    setTimeout(() => statusDiv.classList.add('hidden'), 5000);
+                } catch (error) {
+                    statusDiv.innerHTML = `<div class="bg-red-50 border border-red-200 text-red-700 p-3 rounded">లోపం: ${error.message}</div>`;
+                }
+            }
+
+            async function extractBiodataWithAI(text) {
+                try {
+                    const response = await fetch(AI_API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${AI_API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            model: 'gemini-2.5-pro',
+                            messages: [{
+                                role: 'user',
+                                content: `Extract ALL biodata information from this text and return ONLY valid JSON with these fields:
+{
+  "name": "name in Telugu",
+  "nameEng": "name in English",
+  "gender": "boy or girl",
+  "year": "birth year as number",
+  "height": "height",
+  "education": "education details",
+  "profession": "profession like MLA, IAS, Doctor, Business",
+  "vipLevel": "VIP level 1-5 based on profession (MLA/Minister=5, IAS/IPS=4, Doctor=3, Business=varies)",
+  "politicalConnections": "political connections if any",
+  "netWorth": "net worth in crores as number only",
+  "dowryExpectation": "dowry expectation/capacity in crores as number only",
+  "propertyDetails": "property details",
+  "subCaste": "sub-caste in Telugu like మోటాటి, కప్పు, వెలమ",
+  "fatherName": "father name",
+  "motherName": "mother name",
+  "siblingsCount": "number of siblings",
+  "location": "current city",
+  "nativePlace": "native place",
+  "phone": "phone number",
+  "whatsapp": "whatsapp number"
+}
+
+Text: ${text}
+
+Return ONLY the JSON object, no other text.`
+                            }],
+                            max_tokens: 1000,
+                            temperature: 0.3
+                        })
+                    });
+                    
+                    if (!response.ok) throw new Error(`API error: ${response.status}`);
+                    
+                    const data = await response.json();
+                    
+                    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+                        throw new Error('Invalid API response');
+                    }
+                    
+                    const content = data.choices[0].message.content;
+                    let textContent;
+                    
+                    if (typeof content === 'string') {
+                        textContent = content;
+                    } else if (Array.isArray(content) && content[0] && content[0].text) {
+                        textContent = content[0].text;
+                    } else {
+                        throw new Error('Unexpected content format');
+                    }
+                    
+                    const jsonMatch = textContent.match(/\{[\s\S]*\}/);
+                    if (!jsonMatch) throw new Error('No JSON found in AI response');
+                    
+                    return JSON.parse(jsonMatch[0]);
+                } catch (error) {
+                    throw new Error(`AI extraction failed: ${error.message}`);
+                }
+            }
+
+            async function handleProfileSubmit(e) {
+                e.preventDefault();
+                const statusDiv = document.getElementById('uploadStatus');
+                statusDiv.classList.remove('hidden');
+                statusDiv.innerHTML = '<div class="bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded">సేవ్ చేస్తోంది...</div>';
+
+                try {
+                    let photoUrl = null;
+                    const photoFile = document.getElementById('photoFile').files[0];
+                    if (photoFile) {
+                        photoUrl = await new Promise((resolve) => {
+                            const reader = new FileReader();
+                            reader.onload = () => resolve(reader.result);
+                            reader.readAsDataURL(photoFile);
+                        });
+                    }
+
+                    const profileData = {
+                        name: document.getElementById('name').value,
+                        name_eng: document.getElementById('nameEng').value,
+                        gender: document.getElementById('gender').value,
+                        year: document.getElementById('year').value,
+                        height: document.getElementById('height').value,
+                        education: document.getElementById('education').value,
+                        profession: document.getElementById('profession').value,
+                        vip_level: document.getElementById('vipLevel').value,
+                        political_connections: document.getElementById('politicalConnections').value,
+                        net_worth: document.getElementById('netWorth').value,
+                        dowry_expectation: document.getElementById('dowryExpectation').value,
+                        property_details: document.getElementById('propertyDetails').value,
+                        sub_caste: document.getElementById('subCaste').value,
+                        father_name: document.getElementById('fatherName').value,
+                        mother_name: document.getElementById('motherName').value,
+                        siblings_count: document.getElementById('siblingsCount').value,
+                        location: document.getElementById('location').value,
+                        native_place: document.getElementById('nativePlace').value,
+                        phone: document.getElementById('phone').value,
+                        whatsapp: document.getElementById('whatsapp').value,
+                        photo_url: photoUrl,
+                        agent_id: currentUser.id,
+                        agent_name: currentUserData.name,
+                        status: 'active'
+                    };
+
+                    const { error } = await supabase.from('profiles').insert(profileData);
+                    if (error) throw error;
+
+                    statusDiv.innerHTML = '<div class="bg-green-50 border border-green-200 text-green-700 p-3 rounded">✓ విజయవంతంగా సేవ్ చేయబడింది!</div>';
+                    
+                    // Reset
+                    document.getElementById('biodataFile').value = '';
+                    document.getElementById('photoFile').value = '';
+                    document.getElementById('photoPreview').classList.add('hidden');
+                    document.getElementById('extractedDataForm').classList.add('hidden');
+                    
+                    setTimeout(() => {
+                        statusDiv.classList.add('hidden');
+                        loadAgentProfiles();
+                    }, 2000);
+                } catch (error) {
+                    statusDiv.innerHTML = `<div class="bg-red-50 border border-red-200 text-red-700 p-3 rounded">లోపం: ${error.message}</div>`;
+                }
             }
 
             async function loadAgentProfiles() {
