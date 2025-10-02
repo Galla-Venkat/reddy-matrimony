@@ -50,26 +50,38 @@
 
             async function initAuth() {
                 console.log('Checking session...');
-                const { data: { session } } = await supabase.auth.getSession();
                 
-                if (session) {
-                    console.log('Session found:', session.user.email);
-                    currentUser = session.user;
-                    await loadUserData();
+                try {
+                    // Add timeout to getSession
+                    const sessionPromise = supabase.auth.getSession();
+                    const timeoutPromise = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Session check timeout')), 5000)
+                    );
                     
-                    if (currentUserData) {
-                        if (currentUserData.role === 'uncle') {
-                            showUncleDashboard();
-                        } else if (currentUserData.role === 'agent') {
-                            showAgentPortal();
+                    const { data: { session } } = await Promise.race([sessionPromise, timeoutPromise]);
+                    
+                    if (session) {
+                        console.log('Session found:', session.user.email);
+                        currentUser = session.user;
+                        await loadUserData();
+                        
+                        if (currentUserData) {
+                            if (currentUserData.role === 'uncle') {
+                                showUncleDashboard();
+                            } else if (currentUserData.role === 'agent') {
+                                showAgentPortal();
+                            } else {
+                                showLoginPage();
+                            }
                         } else {
                             showLoginPage();
                         }
                     } else {
+                        console.log('No session found');
                         showLoginPage();
                     }
-                } else {
-                    console.log('No session found');
+                } catch (error) {
+                    console.error('Session check error:', error);
                     showLoginPage();
                 }
 
