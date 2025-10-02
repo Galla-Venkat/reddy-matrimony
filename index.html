@@ -187,7 +187,7 @@
                                         <h1 class="text-3xl font-bold">Uncle Dashboard</h1>
                                         <p class="text-gray-600">Welcome, ${currentUserData.name}</p>
                                     </div>
-                                    <button onclick="location.reload()" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                                    <button id="logoutBtn" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
                                         Logout
                                     </button>
                                 </div>
@@ -218,6 +218,11 @@
                         </div>
                     </div>
                 `;
+                
+                document.getElementById('logoutBtn').addEventListener('click', async () => {
+                    await supabase.auth.signOut();
+                    window.location.reload();
+                });
                 
                 loadAllProfiles();
             }
