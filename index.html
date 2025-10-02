@@ -17,6 +17,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
         function waitForSupabase() {
             if (typeof window.supabase !== 'undefined') {
@@ -28,6 +29,11 @@
         waitForSupabase();
 
         function startApp() {
+            // Configure PDF.js worker
+            if (typeof pdfjsLib !== 'undefined') {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            }
+
             const SUPABASE_URL = 'https://cmefgdiltjevddraguso.supabase.co';
             const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtZWZnZGlsdGpldmRkcmFndXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzNjg5NzAsImV4cCI6MjA3NDk0NDk3MH0.Cz3Acd0Qy5UR_bItqLSSn0zLoLtvvqu1WPG77-PM1RM';
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -368,6 +374,12 @@
                                     <p><span class="font-semibold">వరకట్నం:</span> ${p.dowry_expectation || 'N/A'}</p>
                                     <p><span class="font-semibold">ఫోన్:</span> ${p.phone || 'N/A'}</p>
                                 </div>
+                                <div class="mt-4 flex gap-2">
+                                    <button onclick="deleteProfile('${p.id}', '${safeName}')" 
+                                        class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm">
+                                        🗑️ తొలగించు
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
@@ -376,6 +388,24 @@
                     document.getElementById('profilesList').innerHTML = `<p class="text-red-600">లోపం: ${error.message}</p>`;
                 }
             }
+
+            async function deleteProfile(profileId, profileName) {
+                const confirmed = confirm(`మీరు ఖచ్చితంగా "${profileName}" ప్రొఫైల్‌ను తొలగించాలనుకుంటున్నారా?\n\nఈ చర్య రద్దు చేయబడదు.`);
+                
+                if (!confirmed) return;
+
+                try {
+                    const { error } = await supabase.from('profiles').delete().eq('id', profileId);
+                    if (error) throw error;
+
+                    alert('✓ ప్రొఫైల్ విజయవంతంగా తొలగించబడింది');
+                    location.reload();
+                } catch (error) {
+                    alert('లోపం: ' + error.message);
+                }
+            }
+
+            window.deleteProfile = deleteProfile;
 
             async function showMatchingView() {
                 document.getElementById('app').innerHTML = `
@@ -737,7 +767,22 @@
                 statusDiv.innerHTML = '<div class="bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded">AI ప్రాసెస్ చేస్తోంది... దయచేసి వేచి ఉండండి</div>';
 
                 try {
-                    const text = await file.text();
+                    let text = '';
+                    
+                    // Check if it's a PDF file
+                    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+                        statusDiv.innerHTML = '<div class="bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded">📄 PDF చదువుతోంది... దయచేసి వేచి ఉండండి</div>';
+                        text = await extractTextFromPDF(file);
+                        if (!text || text.trim().length === 0) {
+                            throw new Error('PDF నుండి టెక్స్ట్ సంగ్రహించలేకపోయింది');
+                        }
+                    } else {
+                        // Handle text file
+                        text = await file.text();
+                    }
+
+                    statusDiv.innerHTML = '<div class="bg-blue-50 border border-blue-200 text-blue-700 p-3 rounded">🤖 AI డేటా విశ్లేషిస్తోంది...</div>';
+                    
                     const extractedData = await extractBiodataWithAI(text);
                     
                     statusDiv.innerHTML = '<div class="bg-green-50 border border-green-200 text-green-700 p-3 rounded">✓ డేటా సంగ్రహించబడింది! దయచేసి దిగువ ఫారమ్‌ను సరిచూడండి</div>';
@@ -772,6 +817,26 @@
                 }
             }
 
+            async function extractTextFromPDF(file) {
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                    let fullText = '';
+
+                    // Extract text from all pages
+                    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                        const page = await pdf.getPage(pageNum);
+                        const textContent = await page.getTextContent();
+                        const pageText = textContent.items.map(item => item.str).join(' ');
+                        fullText += pageText + '\n';
+                    }
+
+                    return fullText.trim();
+                } catch (error) {
+                    throw new Error(`PDF ప్రాసెసింగ్ లోపం: ${error.message}`);
+                }
+            }
+
             async function extractBiodataWithAI(text) {
                 try {
                     const response = await fetch(AI_API_URL, {
@@ -784,31 +849,44 @@
                             model: 'gemini-2.5-pro',
                             messages: [{
                                 role: 'user',
-                                content: `Extract ALL biodata information from this text and return ONLY valid JSON with these fields:
+                                content: `Extract biodata information from this text. The text may contain fields like Name, Date of Birth, Place of Birth, Height, Education, Religion/Caste, Job/Occupation, etc. Extract and map them to the JSON fields below.
+
+IMPORTANT INSTRUCTIONS:
+1. For gender: If you see "Hindu/Reddy" or just a male name, assume "boy". If female name, assume "girl".
+2. For year: Extract from "Date of Birth" (e.g., "20 August 1999" → 1999)
+3. For nameEng: Use the English name provided
+4. For name: Convert the English name to Telugu script if possible, or keep English
+5. For profession: Extract from "Job/Occupation" field
+6. For height: Extract from "Height" field (e.g., "5 feet 6 inches" → "5'6\"")
+7. For subCaste: If "Reddy" is mentioned, use "రెడ్డి". Look for variants like Panta, Kapu, Velama, Munnuru, Motati, etc.
+8. For vipLevel: Estimate 1-5 based on profession (Software Engineer=2, IAS/IPS=4, MLA/Minister=5, Doctor=3)
+
+Return ONLY valid JSON:
 {
-  "name": "name in Telugu",
+  "name": "name in Telugu if available, else English",
   "nameEng": "name in English",
   "gender": "boy or girl",
-  "year": "birth year as number",
-  "height": "height",
+  "year": "birth year as number only (e.g., 1999)",
+  "height": "height (e.g., 5'6\\")",
   "education": "education details",
-  "profession": "profession like MLA, IAS, Doctor, Business",
-  "vipLevel": "VIP level 1-5 based on profession (MLA/Minister=5, IAS/IPS=4, Doctor=3, Business=varies)",
-  "politicalConnections": "political connections if any",
-  "netWorth": "net worth in crores as number only",
-  "dowryExpectation": "dowry expectation/capacity in crores as number only",
-  "propertyDetails": "property details",
-  "subCaste": "sub-caste in Telugu like మోటాటి, కప్పు, వెలమ",
-  "fatherName": "father name",
-  "motherName": "mother name",
-  "siblingsCount": "number of siblings",
-  "location": "current city",
-  "nativePlace": "native place",
-  "phone": "phone number",
-  "whatsapp": "whatsapp number"
+  "profession": "profession/occupation",
+  "vipLevel": "1-5 number only",
+  "politicalConnections": "if any mentioned",
+  "netWorth": "if mentioned, number in crores only",
+  "dowryExpectation": "if mentioned, number in crores only",
+  "propertyDetails": "if mentioned",
+  "subCaste": "sub-caste in Telugu (e.g., రెడ్డి, కప్పు, వెలమ)",
+  "fatherName": "if mentioned",
+  "motherName": "if mentioned",
+  "siblingsCount": "if mentioned",
+  "location": "Place of Birth or current location",
+  "nativePlace": "native place if mentioned",
+  "phone": "phone number if found",
+  "whatsapp": "whatsapp number if found"
 }
 
-Text: ${text}
+Biodata Text:
+${text}
 
 Return ONLY the JSON object, no other text.`
                             }],
@@ -949,6 +1027,12 @@ Return ONLY the JSON object, no other text.`
                                 <h3 class="text-lg font-bold">${p.name}</h3>
                                 <p class="text-sm text-gray-600">${p.gender === 'boy' ? 'అబ్బాయి' : 'అమ్మాయి'} | ${p.year} | ${p.profession}</p>
                                 <p class="text-sm text-gray-500">${p.location}</p>
+                                <div class="mt-2">
+                                    <button onclick="deleteProfile('${p.id}', '${safeName}')" 
+                                        class="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600">
+                                        🗑️ తొలగించు
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `}).join('');
