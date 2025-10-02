@@ -719,27 +719,33 @@ Return ONLY the JSON object, no other text.`
                         });
                     }
 
+                    // Helper function to convert empty strings to null for numbers
+                    const parseNumber = (val) => {
+                        const trimmed = (val || '').trim();
+                        return trimmed === '' ? null : trimmed;
+                    };
+
                     const profileData = {
-                        name: document.getElementById('name').value,
-                        name_eng: document.getElementById('nameEng').value,
-                        gender: document.getElementById('gender').value,
-                        year: document.getElementById('year').value,
-                        height: document.getElementById('height').value,
-                        education: document.getElementById('education').value,
-                        profession: document.getElementById('profession').value,
-                        vip_level: document.getElementById('vipLevel').value,
-                        political_connections: document.getElementById('politicalConnections').value,
-                        net_worth: document.getElementById('netWorth').value,
-                        dowry_expectation: document.getElementById('dowryExpectation').value,
-                        property_details: document.getElementById('propertyDetails').value,
-                        sub_caste: document.getElementById('subCaste').value,
-                        father_name: document.getElementById('fatherName').value,
-                        mother_name: document.getElementById('motherName').value,
-                        siblings_count: document.getElementById('siblingsCount').value,
-                        location: document.getElementById('location').value,
-                        native_place: document.getElementById('nativePlace').value,
-                        phone: document.getElementById('phone').value,
-                        whatsapp: document.getElementById('whatsapp').value,
+                        name: document.getElementById('name').value || null,
+                        name_eng: document.getElementById('nameEng').value || null,
+                        gender: document.getElementById('gender').value || null,
+                        year: parseNumber(document.getElementById('year').value),
+                        height: document.getElementById('height').value || null,
+                        education: document.getElementById('education').value || null,
+                        profession: document.getElementById('profession').value || null,
+                        vip_level: parseNumber(document.getElementById('vipLevel').value),
+                        political_connections: document.getElementById('politicalConnections').value || null,
+                        net_worth: parseNumber(document.getElementById('netWorth').value),
+                        dowry_expectation: parseNumber(document.getElementById('dowryExpectation').value),
+                        property_details: document.getElementById('propertyDetails').value || null,
+                        sub_caste: document.getElementById('subCaste').value || null,
+                        father_name: document.getElementById('fatherName').value || null,
+                        mother_name: document.getElementById('motherName').value || null,
+                        siblings_count: parseNumber(document.getElementById('siblingsCount').value),
+                        location: document.getElementById('location').value || null,
+                        native_place: document.getElementById('nativePlace').value || null,
+                        phone: document.getElementById('phone').value || null,
+                        whatsapp: document.getElementById('whatsapp').value || null,
                         photo_url: photoUrl,
                         agent_id: currentUser.id,
                         agent_name: currentUserData.name,
