@@ -534,15 +534,23 @@ _Serving elite Reddy families with trust and discretion_`;
                             </div>
 
                             ${photos.length > 0 ? `
-                                <div class="mb-4 p-4 bg-blue-50 rounded-lg">
-                                    <p class="text-sm font-semibold mb-2">ఫోటోలు (${photos.length}):</p>
-                                    <div class="grid grid-cols-4 gap-2">
+                                <div class="mb-4 p-4 bg-blue-50 rounded-lg border-2 border-blue-300">
+                                    <p class="text-sm font-semibold mb-3 text-blue-900">📷 Profile Photos (${photos.length})</p>
+                                    <div class="grid grid-cols-4 gap-2 mb-3">
                                         ${photos.map((photo, idx) => `
-                                            <img src="${photo}" class="w-full h-24 object-cover rounded border-2 border-blue-300" 
+                                            <img src="${photo}" class="w-full h-24 object-cover rounded border-2 border-blue-300 cursor-pointer hover:border-blue-500" 
                                                  onclick='window.showPhotoGalleryGlobal(${JSON.stringify(photos).replace(/'/g, "&#39;")}, "${(profile.name || '').replace(/'/g, "&#39;")}", ${idx})' />
                                         `).join('')}
                                     </div>
-                                    <p class="text-xs text-gray-600 mt-2">గమనిక: వాట్సాప్ వెబ్ ఫోటోలు ఆటోమేటిక్‌గా పంపదు. దయచేసి మాన్యువల్‌గా పంపండి.</p>
+                                    <div class="bg-yellow-100 border border-yellow-400 rounded p-3 text-xs">
+                                        <p class="font-semibold text-yellow-900 mb-1">⚠️ How to send photos via WhatsApp:</p>
+                                        <ol class="list-decimal ml-4 space-y-1 text-yellow-800">
+                                            <li>Click "Download Photos" button below</li>
+                                            <li>Send the message via WhatsApp</li>
+                                            <li>Manually attach downloaded photos in WhatsApp chat</li>
+                                        </ol>
+                                        <p class="mt-2 text-yellow-700">OR click "Open Photos in Tabs" to view and save individually</p>
+                                    </div>
                                 </div>
                             ` : ''}
                             
@@ -589,26 +597,32 @@ _Serving elite Reddy families with trust and discretion_`;
                                 <button onclick="sendWhatsAppMessage('${message.replace(/'/g, "&#39;").replace(/"/g, "&quot;")}')" 
                                     class="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 flex items-center justify-center gap-2">
                                     <span class="text-xl">💬</span>
-                                    వాట్సాప్ తెరవండి
+                                    Send Message via WhatsApp
                                 </button>
 
                                 ${photos.length > 0 ? `
+                                    <button onclick="openPhotosInTabs(${JSON.stringify(photos).replace(/"/g, '&quot;')})" 
+                                        class="w-full bg-purple-500 text-white py-3 rounded-lg font-semibold hover:bg-purple-600 flex items-center justify-center gap-2">
+                                        <span class="text-xl">🖼️</span>
+                                        Open Photos in Tabs (${photos.length})
+                                    </button>
+                                    
                                     <button onclick="downloadAllPhotos(${JSON.stringify(photos).replace(/"/g, '&quot;')})" 
                                         class="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 flex items-center justify-center gap-2">
                                         <span class="text-xl">📥</span>
-                                        ఫోటోలు డౌన్‌లోడ్ చేయండి (${photos.length})
+                                        Download All Photos (${photos.length})
                                     </button>
                                 ` : ''}
 
                                 <button onclick="copyToClipboard(\`${message.replace(/`/g, '\\`').replace(/'/g, "&#39;")}\`)" 
                                     class="w-full bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 flex items-center justify-center gap-2">
                                     <span class="text-xl">📋</span>
-                                    సందేశం కాపీ చేయండి
+                                    Copy Message to Clipboard
                                 </button>
 
                                 <button onclick="this.closest('.fixed').remove()" 
                                     class="w-full bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-400">
-                                    రద్దు చేయండి
+                                    Cancel
                                 </button>
                             </div>
                         </div>
@@ -651,36 +665,57 @@ _Serving elite Reddy families with trust and discretion_`;
                     phoneNumber = customNumber.replace(/[^0-9]/g, '');
                     
                     if (phoneNumber.length < 10) {
-                        alert('చెల్లుబాటు అయ్యే నంబర్ ఎంటర్ చేయండి');
+                        alert('చెల్లుబాటు అయ్యే నంబర్ ఎంటర్ చేయండి (కనీసం 10 అంకెలు)');
                         return;
                     }
                 } else {
                     phoneNumber = selectedRadio.value;
                 }
 
-                // Ensure country code
-                if (!phoneNumber.startsWith('91') && phoneNumber.length === 10) {
+                // Clean the phone number - remove all non-digits
+                phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
+
+                // Handle country code - ensure it starts with country code
+                if (phoneNumber.length === 10) {
+                    // Indian number without country code
                     phoneNumber = '91' + phoneNumber;
+                } else if (phoneNumber.startsWith('0')) {
+                    // Remove leading 0 and add 91
+                    phoneNumber = '91' + phoneNumber.substring(1);
                 }
+
+                // Validate final number
+                if (phoneNumber.length < 10) {
+                    alert('Invalid phone number. Please check and try again.\nNumber should be 10 digits (without country code) or with country code.');
+                    return;
+                }
+
+                console.log('Opening WhatsApp for number:', phoneNumber);
 
                 const encodedMessage = encodeURIComponent(message);
                 const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
                 
-                window.open(whatsappURL, '_blank');
+                // Open WhatsApp
+                const newWindow = window.open(whatsappURL, '_blank');
                 
-                // Close modal after opening WhatsApp
-                setTimeout(() => {
-                    document.querySelector('.fixed.inset-0').remove();
-                }, 500);
+                if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                    alert('Popup blocked! Please allow popups for this site.\n\nAlternatively, copy this URL:\n' + whatsappURL);
+                } else {
+                    // Close modal after successful opening
+                    setTimeout(() => {
+                        const modal = document.querySelector('.fixed.inset-0');
+                        if (modal) modal.remove();
+                    }, 1000);
+                }
             }
 
             async function downloadAllPhotos(photos) {
                 if (!photos || photos.length === 0) {
-                    alert('ఫోటోలు లేవు');
+                    alert('No photos available');
                     return;
                 }
 
-                alert(`${photos.length} ఫోటోలు డౌన్‌లోడ్ అవుతున్నాయి...`);
+                alert(`Downloading ${photos.length} photos...`);
 
                 for (let i = 0; i < photos.length; i++) {
                     try {
@@ -689,7 +724,7 @@ _Serving elite Reddy families with trust and discretion_`;
                         const url = window.URL.createObjectURL(blob);
                         const a = document.createElement('a');
                         a.href = url;
-                        a.download = `photo_${i + 1}.jpg`;
+                        a.download = `profile_photo_${i + 1}.jpg`;
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
@@ -704,11 +739,31 @@ _Serving elite Reddy families with trust and discretion_`;
                     }
                 }
 
-                alert('✓ ఫోటోలు డౌన్‌లోడ్ అయ్యాయి!');
+                alert('✓ All photos downloaded successfully!\n\nNext steps:\n1. Send the message via WhatsApp\n2. Attach the downloaded photos in WhatsApp');
+            }
+
+            function openPhotosInTabs(photos) {
+                if (!photos || photos.length === 0) {
+                    alert('No photos available');
+                    return;
+                }
+
+                const confirmed = confirm(`This will open ${photos.length} photo(s) in new tabs.\n\nYou can then:\n- Right-click and save each photo\n- Share directly from the browser\n- Attach to WhatsApp manually\n\nContinue?`);
+                
+                if (!confirmed) return;
+
+                photos.forEach((photo, index) => {
+                    setTimeout(() => {
+                        window.open(photo, '_blank');
+                    }, index * 300); // Stagger opening to avoid popup blocker
+                });
+
+                alert('✓ Photos opened in new tabs!\n\nTip: Right-click any photo and select "Save image as..." or share directly');
             }
 
             window.sendWhatsAppMessage = sendWhatsAppMessage;
             window.downloadAllPhotos = downloadAllPhotos;
+            window.openPhotosInTabs = openPhotosInTabs;
 
             function copyToClipboard(text) {
                 navigator.clipboard.writeText(text).then(() => {
