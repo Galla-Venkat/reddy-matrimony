@@ -375,6 +375,10 @@
                                     <p><span class="font-semibold">ఫోన్:</span> ${p.phone || 'N/A'}</p>
                                 </div>
                                 <div class="mt-4 flex gap-2">
+                                    <button onclick="sendToWhatsApp('${p.id}', '${safeName}')" 
+                                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 text-sm">
+                                        📱 వాట్సాప్‌కు పంపించు
+                                    </button>
                                     <button onclick="deleteProfile('${p.id}', '${safeName}')" 
                                         class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm">
                                         🗑️ తొలగించు
@@ -394,18 +398,184 @@
                 
                 if (!confirmed) return;
 
+                const deleteBtn = event.target;
+                deleteBtn.disabled = true;
+                deleteBtn.textContent = 'తొలగిస్తోంది...';
+
                 try {
-                    const { error } = await supabase.from('profiles').delete().eq('id', profileId);
-                    if (error) throw error;
+                    // First check if profile exists
+                    const { data: checkData, error: checkError } = await supabase
+                        .from('profiles')
+                        .select('id')
+                        .eq('id', profileId)
+                        .single();
+
+                    if (checkError) {
+                        throw new Error('ప్రొఫైల్ కనుగొనబడలేదు');
+                    }
+
+                    // Delete the profile
+                    const { error } = await supabase
+                        .from('profiles')
+                        .delete()
+                        .eq('id', profileId);
+
+                    if (error) {
+                        console.error('Delete error:', error);
+                        throw new Error(`తొలగింపు విఫలమైంది: ${error.message}`);
+                    }
 
                     alert('✓ ప్రొఫైల్ విజయవంతంగా తొలగించబడింది');
-                    location.reload();
+                    
+                    // Reload the appropriate view
+                    if (currentUserData.role === 'uncle') {
+                        loadAllProfiles();
+                    } else {
+                        loadAgentProfiles();
+                    }
+                } catch (error) {
+                    console.error('Delete error:', error);
+                    alert('లోపం: ' + error.message);
+                    deleteBtn.disabled = false;
+                    deleteBtn.textContent = '🗑️ తొలగించు';
+                }
+            }
+
+            window.deleteProfile = deleteProfile;
+
+            async function sendToWhatsApp(profileId, profileName) {
+                try {
+                    // Fetch the full profile
+                    const { data: profile, error } = await supabase
+                        .from('profiles')
+                        .select('*')
+                        .eq('id', profileId)
+                        .single();
+
+                    if (error) throw error;
+
+                    // Create biodata message in Telugu
+                    const message = `🙏 నమస్కారం,
+
+*VIP రెడ్డి మ్యాట్రిమోనీ*
+
+📋 *బయోడేటా వివరాలు:*
+
+👤 *పేరు:* ${profile.name || 'N/A'}
+📝 *English Name:* ${profile.name_eng || 'N/A'}
+👥 *లింగం:* ${profile.gender === 'boy' ? 'అబ్బాయి 👦' : 'అమ్మాయి 👧'}
+📅 *సంవత్సరం:* ${profile.year || 'N/A'}
+📏 *ఎత్తు:* ${profile.height || 'N/A'}
+🎓 *విద్య:* ${profile.education || 'N/A'}
+💼 *ఉద్యోగం:* ${profile.profession || 'N/A'}
+⭐ *VIP స్థాయి:* ${profile.vip_level || 'N/A'}/5
+
+💰 *ఆర్థిక వివరాలు:*
+💎 *నికర విలువ:* ${profile.net_worth || 'N/A'}
+💍 *వరకట్నం:* ${profile.dowry_expectation || 'N/A'}
+🏠 *ఆస్తి:* ${profile.property_details || 'N/A'}
+
+👨‍👩‍👧‍👦 *కుటుంబ వివరాలు:*
+🏛️ *ఉప-కులం:* ${profile.sub_caste || 'N/A'}
+👨 *తండ్రి:* ${profile.father_name || 'N/A'}
+👩 *తల్లి:* ${profile.mother_name || 'N/A'}
+👫 *తోబుట్టువులు:* ${profile.siblings_count || 'N/A'}
+
+📍 *స్థాన వివరాలు:*
+🏙️ *ప్రస్తుత నగరం:* ${profile.location || 'N/A'}
+🏡 *స్వస్థలం:* ${profile.native_place || 'N/A'}
+
+📞 *సంప్రదింపు:*
+📱 *ఫోన్:* ${profile.phone || 'N/A'}
+💬 *వాట్సాప్:* ${profile.whatsapp || profile.phone || 'N/A'}
+
+${profile.political_connections ? `🏛️ *రాజకీయ సంబంధాలు:* ${profile.political_connections}\n` : ''}
+-----------------------------------
+*VIP రెడ్డి మ్యాట్రిమోనీ*
+వృత్తిపరమైన పెళ్లికూతుర వ్యవస్థ`;
+
+                    // Encode message for URL
+                    const encodedMessage = encodeURIComponent(message);
+                    
+                    // Open WhatsApp with pre-filled message
+                    // For mobile: whatsapp://send
+                    // For web: https://wa.me or https://web.whatsapp.com
+                    const whatsappURL = `https://wa.me/?text=${encodedMessage}`;
+                    
+                    // Show modal with options
+                    showWhatsAppModal(whatsappURL, message, profile);
+                    
                 } catch (error) {
                     alert('లోపం: ' + error.message);
                 }
             }
 
-            window.deleteProfile = deleteProfile;
+            function showWhatsAppModal(whatsappURL, message, profile) {
+                const modal = document.createElement('div');
+                modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+                modal.innerHTML = `
+                    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h2 class="text-2xl font-bold">📱 వాట్సాప్‌కు పంపించు</h2>
+                                <button onclick="this.closest('.fixed').remove()" class="text-gray-500 hover:text-gray-700 text-3xl">×</button>
+                            </div>
+                            
+                            <div class="bg-green-50 border-2 border-green-200 rounded-lg p-4 mb-4">
+                                <p class="text-sm text-green-800 mb-2">📋 <strong>సందేశం ప్రివ్యూ:</strong></p>
+                                <pre class="text-xs bg-white p-3 rounded border whitespace-pre-wrap font-sans">${message}</pre>
+                            </div>
+
+                            ${profile.phone || profile.whatsapp ? `
+                                <div class="mb-4 p-4 bg-blue-50 rounded-lg">
+                                    <p class="text-sm font-semibold mb-2">📞 సంప్రదింపు నంబర్:</p>
+                                    <p class="text-lg font-mono">${profile.whatsapp || profile.phone}</p>
+                                </div>
+                            ` : ''}
+
+                            <div class="space-y-3">
+                                <button onclick="window.open('${whatsappURL}', '_blank')" 
+                                    class="w-full bg-green-500 text-white py-3 rounded-lg font-semibold hover:bg-green-600 flex items-center justify-center gap-2">
+                                    <span class="text-xl">💬</span>
+                                    వాట్సాప్ తెరవండి (ఏదైనా నంబర్‌కు)
+                                </button>
+
+                                ${profile.phone || profile.whatsapp ? `
+                                    <button onclick="window.open('https://wa.me/${(profile.whatsapp || profile.phone).replace(/[^0-9]/g, '')}?text=${encodeURIComponent(message)}', '_blank')" 
+                                        class="w-full bg-blue-500 text-white py-3 rounded-lg font-semibold hover:bg-blue-600 flex items-center justify-center gap-2">
+                                        <span class="text-xl">📱</span>
+                                        నేరుగా ${profile.whatsapp || profile.phone} కు పంపించు
+                                    </button>
+                                ` : ''}
+
+                                <button onclick="copyToClipboard(\`${message.replace(/`/g, '\\`')}\`)" 
+                                    class="w-full bg-gray-500 text-white py-3 rounded-lg font-semibold hover:bg-gray-600 flex items-center justify-center gap-2">
+                                    <span class="text-xl">📋</span>
+                                    సందేశం కాపీ చేయండి
+                                </button>
+
+                                <button onclick="this.closest('.fixed').remove()" 
+                                    class="w-full bg-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-400">
+                                    రద్దు చేయండి
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+            }
+
+            function copyToClipboard(text) {
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('✓ సందేశం క్లిప్‌బోర్డ్‌కు కాపీ చేయబడింది!');
+                }).catch(() => {
+                    alert('కాపీ చేయడం విఫలమైంది');
+                });
+            }
+
+            window.sendToWhatsApp = sendToWhatsApp;
+            window.copyToClipboard = copyToClipboard;
 
             async function showMatchingView() {
                 document.getElementById('app').innerHTML = `
