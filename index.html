@@ -5,97 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIP రెడ్డి మ్యాట్రిమోనీ</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-gradient-to-br from-orange-50 to-red-50 min-h-screen">
     <div id="app"></div>
 
-    <!-- Firebase Scripts - Version 9 modular -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-        import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, query, where, orderBy, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBFtdrjavkNXgFZKJUY309d88oRkGTmfKU",
-            authDomain: "reddy-matrimony.firebaseapp.com",
-            projectId: "reddy-matrimony",
-            storageBucket: "reddy-matrimony.firebasestorage.app",
-            messagingSenderId: "746200669417",
-            appId: "1:746200669417:web:6d74aa8c21ee636c6de478"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        // Store globally for access
-        window.firebaseAuth = auth;
-        window.firebaseDb = db;
-        window.firebaseSignIn = signInWithEmailAndPassword;
-        window.firebaseSignOut = signOut;
-        window.firebaseOnAuthStateChanged = onAuthStateChanged;
-        window.firebaseCollection = collection;
-        window.firebaseAddDoc = addDoc;
-        window.firebaseGetDocs = getDocs;
-        window.firebaseDoc = doc;
-        window.firebaseGetDoc = getDoc;
-        window.firebaseUpdateDoc = updateDoc;
-        window.firebaseQuery = query;
-        window.firebaseWhere = where;
-        window.firebaseOrderBy = orderBy;
-        window.firebaseServerTimestamp = serverTimestamp;
-
-        console.log('Firebase initialized successfully');
-
-        // Start the app after Firebase is ready
-        startApp();
-    </script>
-
     <script>
-        // Global state
-        let currentUser = null;
-        let currentUserData = null;
-        let profiles = [];
-        let matches = [];
+        // Initialize Supabase
+        const SUPABASE_URL = 'https://cmefgdiltjevddraguso.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNtZWZnZGlsdGpldmRkcmFndXNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkzNjg5NzAsImV4cCI6MjA3NDk0NDk3MH0.Cz3Acd0Qy5UR_bItqLSSn0zLoLtvvqu1WPG77-PM1RM';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Third-party AI API configuration
+        // AI API Configuration
         const AI_API_URL = 'https://api.euron.one/api/v1/euri/chat/completions';
         const AI_API_KEY = 'euri-806e518a3ad06e4491c2b099282bf8de3fef780b9ed1abde986b954a3c95dad6';
 
-        function startApp() {
-            // Check auth state
-            window.firebaseOnAuthStateChanged(window.firebaseAuth, async (user) => {
-                if (user) {
-                    currentUser = user;
-                    await loadUserData();
-                    if (currentUserData) {
-                        if (currentUserData.role === 'uncle') {
-                            showUncleDashboard();
-                        } else if (currentUserData.role === 'agent') {
-                            showAgentPortal();
-                        }
+        // Global state
+        let currentUser = null;
+        let currentUserData = null;
+
+        // Check auth state on load
+        supabase.auth.onAuthStateChange(async (event, session) => {
+            if (session) {
+                currentUser = session.user;
+                await loadUserData();
+                if (currentUserData) {
+                    if (currentUserData.role === 'uncle') {
+                        showUncleDashboard();
+                    } else if (currentUserData.role === 'agent') {
+                        showAgentPortal();
                     }
                 } else {
                     showLoginPage();
+                    alert('User profile not found. Please contact admin.');
                 }
-            });
-        }
+            } else {
+                currentUser = null;
+                currentUserData = null;
+                showLoginPage();
+            }
+        });
 
         async function loadUserData() {
             try {
-                const userDoc = await window.firebaseGetDoc(
-                    window.firebaseDoc(window.firebaseDb, 'users', currentUser.uid)
-                );
-                if (userDoc.exists()) {
-                    currentUserData = userDoc.data();
-                    console.log('User data loaded:', currentUserData);
-                } else {
-                    console.error('No user document found');
-                }
+                const { data, error } = await supabase
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('id', currentUser.id)
+                    .single();
+
+                if (error) throw error;
+                currentUserData = data;
+                console.log('User data loaded:', currentUserData);
             } catch (error) {
                 console.error('Error loading user data:', error);
+                currentUserData = null;
             }
         }
 
@@ -107,7 +71,6 @@
                             <div class="text-6xl mb-4">👑</div>
                             <h1 class="text-3xl font-bold text-gray-800">VIP రెడ్డి మ్యాట్రిమోనీ</h1>
                             <p class="text-gray-600 mt-2">Professional Matchmaking System</p>
-                            <p class="text-sm text-gray-500 mt-1">Uncle & Agent Login</p>
                         </div>
                         
                         <div class="space-y-4">
@@ -115,16 +78,18 @@
                                 type="email" 
                                 id="loginEmail" 
                                 placeholder="Email"
+                                value=""
                                 class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none"
                             />
                             <input 
                                 type="password" 
                                 id="loginPassword" 
                                 placeholder="Password"
+                                value=""
                                 class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none"
                             />
                             <button 
-                                onclick="handleLogin()"
+                                id="loginBtn"
                                 class="w-full bg-gradient-to-r from-red-600 to-orange-600 text-white py-3 rounded-lg font-semibold hover:from-red-700 hover:to-orange-700 transition"
                             >
                                 Login
@@ -143,15 +108,34 @@
                     </div>
                 </div>
             `;
+
+            document.getElementById('loginBtn').addEventListener('click', handleLogin);
+            document.getElementById('loginEmail').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleLogin();
+            });
+            document.getElementById('loginPassword').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleLogin();
+            });
         }
 
         async function handleLogin() {
-            const email = document.getElementById('loginEmail').value;
+            const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
             const errorDiv = document.getElementById('loginError');
 
+            if (!email || !password) {
+                errorDiv.classList.remove('hidden');
+                errorDiv.querySelector('div').textContent = 'Please enter both email and password';
+                return;
+            }
+
             try {
-                await window.firebaseSignIn(window.firebaseAuth, email, password);
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
+                });
+
+                if (error) throw error;
                 errorDiv.classList.add('hidden');
             } catch (error) {
                 console.error('Login error:', error);
@@ -170,7 +154,7 @@
                                     <h1 class="text-3xl font-bold text-gray-800">Uncle Dashboard</h1>
                                     <p class="text-gray-600">Welcome, ${currentUserData.name}</p>
                                 </div>
-                                <button onclick="handleLogout()" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                                <button id="logoutBtn" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
                                     Logout
                                 </button>
                             </div>
@@ -179,7 +163,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                             <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-6">
                                 <div class="text-4xl mb-2">📊</div>
-                                <div class="text-3xl font-bold">0</div>
+                                <div class="text-3xl font-bold" id="totalProfiles">0</div>
                                 <div class="text-blue-100">Total Profiles</div>
                             </div>
                             <div class="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-6">
@@ -189,7 +173,7 @@
                             </div>
                             <div class="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-6">
                                 <div class="text-4xl mb-2">✅</div>
-                                <div class="text-3xl font-bold">0</div>
+                                <div class="text-3xl font-bold">0%</div>
                                 <div class="text-purple-100">Success Rate</div>
                             </div>
                         </div>
@@ -203,6 +187,8 @@
                     </div>
                 </div>
             `;
+            
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
             loadAllProfiles();
         }
 
@@ -216,7 +202,7 @@
                                     <h1 class="text-3xl font-bold text-gray-800">Agent Portal</h1>
                                     <p class="text-gray-600">Welcome, ${currentUserData.name}</p>
                                 </div>
-                                <button onclick="handleLogout()" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                                <button id="logoutBtn" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
                                     Logout
                                 </button>
                             </div>
@@ -231,10 +217,9 @@
                                     id="biodataFile" 
                                     accept=".pdf,.txt"
                                     class="hidden"
-                                    onchange="handleFileUpload(event)"
                                 />
                                 <button 
-                                    onclick="document.getElementById('biodataFile').click()"
+                                    id="uploadBtn"
                                     class="px-6 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-semibold"
                                 >
                                     Choose File to Upload
@@ -255,6 +240,13 @@
                     </div>
                 </div>
             `;
+
+            document.getElementById('logoutBtn').addEventListener('click', handleLogout);
+            document.getElementById('uploadBtn').addEventListener('click', () => {
+                document.getElementById('biodataFile').click();
+            });
+            document.getElementById('biodataFile').addEventListener('change', handleFileUpload);
+            
             loadAgentProfiles();
         }
 
@@ -264,6 +256,7 @@
 
             const statusDiv = document.getElementById('uploadStatus');
             statusDiv.classList.remove('hidden');
+            statusDiv.querySelector('div').className = 'bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg';
             statusDiv.querySelector('div').textContent = 'Processing file with AI...';
 
             try {
@@ -277,8 +270,9 @@
                 statusDiv.querySelector('div').textContent = 'Profile added successfully!';
                 
                 setTimeout(() => {
+                    statusDiv.classList.add('hidden');
                     loadAgentProfiles();
-                }, 1500);
+                }, 2000);
             } catch (error) {
                 console.error('Upload error:', error);
                 statusDiv.querySelector('div').className = 'bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg';
@@ -297,25 +291,7 @@
                     model: 'gemini-2.5-pro',
                     messages: [{
                         role: 'user',
-                        content: `Extract biodata information from this text and return ONLY a valid JSON object with these exact fields:
-{
-  "name": "name in Telugu",
-  "nameEng": "name in English",
-  "gender": "boy or girl",
-  "year": "birth year",
-  "height": "height",
-  "education": "education details",
-  "profession": "profession",
-  "netWorth": "net worth in Telugu",
-  "dowryExpectation": "dowry expectation or capacity",
-  "subCaste": "sub-caste in Telugu",
-  "location": "current city",
-  "phone": "phone number"
-}
-
-Text: ${text}
-
-Return ONLY the JSON, no other text.`
+                        content: `Extract biodata from this text. Return ONLY valid JSON with these fields: name, nameEng, gender, year, height, education, profession, netWorth, dowryExpectation, subCaste, location, phone. Text: ${text}`
                     }],
                     max_tokens: 1000,
                     temperature: 0.3
@@ -329,92 +305,95 @@ Return ONLY the JSON, no other text.`
         }
 
         async function saveProfile(data) {
-            await window.firebaseAddDoc(window.firebaseCollection(window.firebaseDb, 'profiles'), {
-                ...data,
-                agentId: currentUser.uid,
-                agentName: currentUserData.name,
+            const { error } = await supabase.from('profiles').insert({
+                name: data.name,
+                name_eng: data.nameEng,
+                gender: data.gender,
+                year: data.year,
+                height: data.height,
+                education: data.education,
+                profession: data.profession,
+                net_worth: data.netWorth,
+                dowry_expectation: data.dowryExpectation,
+                sub_caste: data.subCaste,
+                location: data.location,
+                phone: data.phone,
+                agent_id: currentUser.id,
+                agent_name: currentUserData.name,
                 status: 'active',
-                approvedByUncle: false,
-                createdAt: window.firebaseServerTimestamp(),
-                updatedAt: window.firebaseServerTimestamp()
+                approved_by_uncle: false
             });
+
+            if (error) throw error;
         }
 
         async function loadAllProfiles() {
             try {
-                const querySnapshot = await window.firebaseGetDocs(
-                    window.firebaseCollection(window.firebaseDb, 'profiles')
-                );
-                
-                const profilesHtml = querySnapshot.empty ? 
-                    '<p class="text-gray-500">No profiles yet. Agents will add profiles soon.</p>' :
-                    querySnapshot.docs.map(doc => {
-                        const data = doc.data();
-                        return `
-                            <div class="border rounded-lg p-4 mb-4 hover:bg-gray-50">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <h3 class="text-xl font-bold text-gray-800">${data.name}</h3>
-                                        <p class="text-gray-600">${data.nameEng || ''}</p>
-                                        <p class="text-sm text-gray-500 mt-2">
-                                            ${data.gender} | ${data.year} | ${data.profession || 'N/A'}
-                                        </p>
-                                        <p class="text-sm text-gray-500">
-                                            ${data.location || 'N/A'} | ${data.subCaste || 'N/A'}
-                                        </p>
-                                    </div>
-                                    <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm">
-                                        ${data.status}
-                                    </span>
-                                </div>
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    document.getElementById('profilesList').innerHTML = '<p class="text-gray-500">No profiles yet.</p>';
+                    return;
+                }
+
+                const profilesHtml = data.map(profile => `
+                    <div class="border rounded-lg p-4 mb-4 hover:bg-gray-50">
+                        <div class="flex justify-between">
+                            <div>
+                                <h3 class="text-xl font-bold">${profile.name || 'N/A'}</h3>
+                                <p class="text-sm text-gray-600">${profile.gender || 'N/A'} | ${profile.year || 'N/A'} | ${profile.profession || 'N/A'}</p>
+                                <p class="text-sm text-gray-500">${profile.location || 'N/A'}</p>
                             </div>
-                        `;
-                    }).join('');
+                            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm h-fit">${profile.status}</span>
+                        </div>
+                    </div>
+                `).join('');
 
                 document.getElementById('profilesList').innerHTML = profilesHtml;
+                document.getElementById('totalProfiles').textContent = data.length;
             } catch (error) {
-                console.error('Error loading profiles:', error);
-                document.getElementById('profilesList').innerHTML = 
-                    `<p class="text-red-600">Error loading profiles: ${error.message}</p>`;
+                console.error('Error:', error);
+                document.getElementById('profilesList').innerHTML = `<p class="text-red-600">Error: ${error.message}</p>`;
             }
         }
 
         async function loadAgentProfiles() {
             try {
-                const q = window.firebaseQuery(
-                    window.firebaseCollection(window.firebaseDb, 'profiles'),
-                    window.firebaseWhere('agentId', '==', currentUser.uid)
-                );
-                const querySnapshot = await window.firebaseGetDocs(q);
-                
-                const profilesHtml = querySnapshot.empty ? 
-                    '<p class="text-gray-500">You haven\'t added any profiles yet.</p>' :
-                    querySnapshot.docs.map(doc => {
-                        const data = doc.data();
-                        return `
-                            <div class="border rounded-lg p-4 mb-4 hover:bg-gray-50">
-                                <h3 class="text-lg font-bold text-gray-800">${data.name}</h3>
-                                <p class="text-gray-600">${data.nameEng || ''}</p>
-                                <p class="text-sm text-gray-500 mt-2">
-                                    ${data.gender} | ${data.year} | ${data.profession || 'N/A'}
-                                </p>
-                                <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs mt-2 inline-block">
-                                    ${data.status}
-                                </span>
-                            </div>
-                        `;
-                    }).join('');
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('agent_id', currentUser.id)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!data || data.length === 0) {
+                    document.getElementById('agentProfiles').innerHTML = '<p class="text-gray-500">No profiles yet.</p>';
+                    return;
+                }
+
+                const profilesHtml = data.map(profile => `
+                    <div class="border rounded-lg p-4 mb-4">
+                        <h3 class="text-lg font-bold">${profile.name || 'N/A'}</h3>
+                        <p class="text-sm text-gray-600">${profile.gender || 'N/A'} | ${profile.year || 'N/A'}</p>
+                        <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs mt-2 inline-block">${profile.status}</span>
+                    </div>
+                `).join('');
 
                 document.getElementById('agentProfiles').innerHTML = profilesHtml;
             } catch (error) {
-                console.error('Error loading agent profiles:', error);
-                document.getElementById('agentProfiles').innerHTML = 
-                    `<p class="text-red-600">Error: ${error.message}</p>`;
+                console.error('Error:', error);
+                document.getElementById('agentProfiles').innerHTML = `<p class="text-red-600">Error: ${error.message}</p>`;
             }
         }
 
         async function handleLogout() {
-            await window.firebaseSignOut(window.firebaseAuth);
+            await supabase.auth.signOut();
         }
     </script>
 </body>
