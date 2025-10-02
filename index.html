@@ -24,8 +24,11 @@
         let currentUser = null;
         let currentUserData = null;
 
-        // Check auth state on load
-        supabase.auth.onAuthStateChange(async (event, session) => {
+        // Initialize auth
+        async function initAuth() {
+            // Check current session
+            const { data: { session } } = await supabase.auth.getSession();
+            
             if (session) {
                 currentUser = session.user;
                 await loadUserData();
@@ -34,17 +37,40 @@
                         showUncleDashboard();
                     } else if (currentUserData.role === 'agent') {
                         showAgentPortal();
+                    } else {
+                        showLoginPage();
+                        alert('Invalid user role.');
                     }
                 } else {
                     showLoginPage();
-                    alert('User profile not found. Please contact admin.');
+                    alert('User profile not found.');
                 }
             } else {
+                showLoginPage();
+            }
+        }
+
+        // Listen for auth changes
+        supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'SIGNED_IN' && session) {
+                currentUser = session.user;
+                await loadUserData();
+                if (currentUserData) {
+                    if (currentUserData.role === 'uncle') {
+                        showUncleDashboard();
+                    } else if (currentUserData.role === 'agent') {
+                        showAgentPortal();
+                    }
+                }
+            } else if (event === 'SIGNED_OUT') {
                 currentUser = null;
                 currentUserData = null;
                 showLoginPage();
             }
         });
+
+        // Start the app
+        initAuth();
 
         async function loadUserData() {
             try {
