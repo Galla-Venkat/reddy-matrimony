@@ -650,7 +650,7 @@ _Serving elite Reddy families with trust and discretion_`;
                 const selectedRadio = document.querySelector('input[name="whatsappNumber"]:checked');
                 
                 if (!selectedRadio) {
-                    alert('దయచేసి వాట్సాప్ నంబర్ ఎంచుకోండి');
+                    alert('Please select a WhatsApp number');
                     return;
                 }
 
@@ -659,53 +659,69 @@ _Serving elite Reddy families with trust and discretion_`;
                 if (selectedRadio.value === 'custom') {
                     const customNumber = document.getElementById('customWhatsappNumber').value.trim();
                     if (!customNumber) {
-                        alert('దయచేసి కస్టమ్ నంబర్ ఎంటర్ చేయండి');
+                        alert('Please enter a custom number');
                         return;
                     }
                     phoneNumber = customNumber.replace(/[^0-9]/g, '');
                     
                     if (phoneNumber.length < 10) {
-                        alert('చెల్లుబాటు అయ్యే నంబర్ ఎంటర్ చేయండి (కనీసం 10 అంకెలు)');
+                        alert('Please enter a valid number (minimum 10 digits)');
                         return;
                     }
                 } else {
                     phoneNumber = selectedRadio.value;
                 }
 
+                console.log('Original number:', phoneNumber);
+
                 // Clean the phone number - remove all non-digits
                 phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
+                console.log('After cleaning:', phoneNumber);
 
                 // Handle country code - ensure it starts with country code
                 if (phoneNumber.length === 10) {
                     // Indian number without country code
                     phoneNumber = '91' + phoneNumber;
+                    console.log('Added 91 prefix:', phoneNumber);
                 } else if (phoneNumber.startsWith('0')) {
                     // Remove leading 0 and add 91
                     phoneNumber = '91' + phoneNumber.substring(1);
+                    console.log('Removed 0, added 91:', phoneNumber);
                 }
 
                 // Validate final number
-                if (phoneNumber.length < 10) {
-                    alert('Invalid phone number. Please check and try again.\nNumber should be 10 digits (without country code) or with country code.');
+                if (phoneNumber.length < 12) {
+                    alert('Invalid phone number format.\nExpected: 12 digits with country code (91XXXXXXXXXX)\nGot: ' + phoneNumber.length + ' digits\n\nPlease check the number and try again.');
+                    console.error('Invalid length:', phoneNumber.length, 'Number:', phoneNumber);
                     return;
                 }
 
-                console.log('Opening WhatsApp for number:', phoneNumber);
+                console.log('Final number for WhatsApp:', phoneNumber);
 
                 const encodedMessage = encodeURIComponent(message);
                 const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
                 
-                // Open WhatsApp
-                const newWindow = window.open(whatsappURL, '_blank');
+                console.log('WhatsApp URL:', whatsappURL);
                 
-                if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-                    alert('Popup blocked! Please allow popups for this site.\n\nAlternatively, copy this URL:\n' + whatsappURL);
-                } else {
-                    // Close modal after successful opening
-                    setTimeout(() => {
-                        const modal = document.querySelector('.fixed.inset-0');
-                        if (modal) modal.remove();
-                    }, 1000);
+                // Try to open WhatsApp
+                try {
+                    const newWindow = window.open(whatsappURL, '_blank');
+                    
+                    if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                        // Popup was blocked
+                        alert('⚠️ Popup Blocked!\n\nPlease:\n1. Allow popups for this site\n2. Or copy this link and open manually:\n\n' + whatsappURL);
+                        console.error('Popup blocked');
+                    } else {
+                        console.log('WhatsApp opened successfully');
+                        // Close modal after successful opening
+                        setTimeout(() => {
+                            const modal = document.querySelector('.fixed.inset-0');
+                            if (modal) modal.remove();
+                        }, 1000);
+                    }
+                } catch (error) {
+                    console.error('Error opening WhatsApp:', error);
+                    alert('Error opening WhatsApp: ' + error.message);
                 }
             }
 
